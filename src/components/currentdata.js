@@ -26,7 +26,7 @@ const EnteredDataPage = () => {
   const [timesheetList, setTimesheetList] = useState([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [filters, setFilters] = useState({ name: "", project: "", workDone: "" });
+  const [filters, setFilters] = useState({ name: "", project: "", workDone: "", leave: "", extraActivity: "", description: "" });
   const [totalRecords, setTotalRecords] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
   const [activeFilter, setActiveFilter] = useState("");
@@ -34,7 +34,7 @@ const EnteredDataPage = () => {
 
   useEffect(() => {
     fetchTimesheets();
-  }, [page, rowsPerPage, filters, localStorage.getItem("user")]); // Ensures data updates when user changes
+  }, [page, rowsPerPage, filters]);
 
   const fetchTimesheets = async () => {
     try {
@@ -42,11 +42,11 @@ const EnteredDataPage = () => {
 
       if (!loggedInUser || !loggedInUser.email) {
         console.error("No logged-in user found!");
-        setTimesheetList([]); // Reset state when no user found
+        setTimesheetList([]);
         return;
       }
 
-      setTimesheetList([]); // Clear previous data before fetching new
+      setTimesheetList([]);
 
       const response = await axios.get("http://localhost:8080/api/timesheet/getusertimesheets", {
         params: {
@@ -55,7 +55,10 @@ const EnteredDataPage = () => {
           name: filters.name || undefined,
           project: filters.project || undefined,
           workDone: filters.workDone || undefined,
-          email: loggedInUser.email, // Fetch only logged-in user's data
+          leave: filters.leave || undefined,  
+          extraActivity: filters.extraActivity || undefined,
+          description: filters.description || undefined, // Added description filter
+          email: loggedInUser.email,
         },
       });
 
@@ -79,9 +82,10 @@ const EnteredDataPage = () => {
     navigate("/dashboard");
   };
 
-  const handleFilterClick = (event, filterColumn) => {
-    setAnchorEl(event.currentTarget);
-    setActiveFilter(filterColumn);
+  const handleFilterClick = (e, field) => {
+    e.preventDefault();
+    setActiveFilter(field);
+    setAnchorEl(e.currentTarget);
   };
 
   const handleFilterSelect = (value) => {
@@ -89,18 +93,77 @@ const EnteredDataPage = () => {
     setAnchorEl(null);
   };
 
-  const clearFilters = () => {
-    setFilters({ name: "", project: "", workDone: "" });
+  const handleFilterValues = () => {
+    const filterValues = [];
+  
+    timesheetList.forEach((entry) => {
+      if (activeFilter === "description") {
+        // Filter by 'Leave' type
+        if (entry.typeOfWork === "Leave") filterValues.push("Leave");
+  
+        // Filter by 'Extra Activity' type
+        if (entry.typeOfWork === "Extra Activity") filterValues.push("Extra Activity");
+  
+        // Filter by 'Regular Work' type
+        if (entry.typeOfWork === "Regular Work") filterValues.push("Regular Work");
+  
+        // Filter by 'project' (only for 'Regular Work')
+        if (entry.typeOfWork === "Regular Work" && entry.project && entry.project.name) {
+          filterValues.push(entry.project.name);
+        }
+  
+        // Filter by 'leave' (only for 'Leave' type)
+        if (entry.typeOfWork === "Leave" && entry.leaveType) {
+          filterValues.push(entry.leaveType); // Half Day or Full Day
+        }
+  
+        // Filter by 'extraActivity' (only for 'Extra Activity' type)
+        if (entry.typeOfWork === "Extra Activity" && entry.extraActivity) {
+          filterValues.push(entry.extraActivity);
+        }
+      }
+  
+      // For other filters like 'name', 'workDone', etc. (if needed)
+      if (activeFilter === "name" && entry.name) {
+        filterValues.push(entry.name);
+      }
+  
+      if (activeFilter === "workDone" && entry.workDone) {
+        filterValues.push(entry.workDone);
+      }
+    });
+  
+    // Return unique filter values to avoid duplicates
+    return [...new Set(filterValues)];
   };
+  
+
+  // Function to filter timesheetList based on selected filters
+  const filterTimesheetList = () => {
+    return timesheetList.filter((entry) => {
+      if (filters.name && entry.name !== filters.name) return false;
+      if (filters.project && entry.project?.name !== filters.project) return false;
+      if (filters.workDone && entry.workDone !== filters.workDone) return false;
+      if (filters.leave && entry.isLeave !== true) return false;
+      if (filters.extraActivity && entry.typeOfWork !== "Extra Activity") return false;
+      if (filters.description && entry.typeOfWork !== filters.description) return false;
+
+      return true;
+    });
+  };
+
+  const clearFilters = () => {
+    setFilters({ name: "", project: "", workDone: "", leave: "", extraActivity: "", description: "" });
+  };
+
+  const filteredTimesheetList = filterTimesheetList();
 
   return (
     <Container maxWidth="lg" sx={{ mt: 5 }}>
-      <Sidebar />
       <Typography variant="h4" align="center" gutterBottom>
         Entered Timesheet Data
       </Typography>
 
-      {/* Filter Chips */}
       <Box sx={{ display: "flex", gap: 1, mb: 3, flexWrap: "wrap" }}>
         {Object.entries(filters).map(
           ([key, value]) =>
@@ -120,12 +183,11 @@ const EnteredDataPage = () => {
         color="secondary"
         onClick={clearFilters}
         sx={{ mb: 3 }}
-        disabled={!filters.name && !filters.project && !filters.workDone}
+        disabled={!filters.name && !filters.project && !filters.workDone && !filters.leave && !filters.extraActivity && !filters.description}
       >
         Clear All Filters
       </Button>
 
-      {/* Timesheet Table */}
       <TableContainer component={Paper} sx={{ mt: 3 }}>
         <Table>
           <TableHead>
@@ -138,8 +200,8 @@ const EnteredDataPage = () => {
                 </IconButton>
               </TableCell>
               <TableCell>
-                <strong>project</strong>
-                <IconButton onClick={(e) => handleFilterClick(e, "project")}>
+                <strong>Description</strong>
+                <IconButton onClick={(e) => handleFilterClick(e, "description")}>
                   <FilterAltIcon />
                 </IconButton>
               </TableCell>
@@ -153,20 +215,22 @@ const EnteredDataPage = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {timesheetList.length > 0 ? (
-              timesheetList.map((entry) => (
+            {filteredTimesheetList.length > 0 ? (
+              filteredTimesheetList.map((entry) => (
                 <TableRow key={entry._id}>
-<TableCell>{entry.date ? new Date(entry.date).toLocaleDateString() : "N/A"}</TableCell>
-<TableCell>{typeof entry.name === "object" ? JSON.stringify(entry.name) : entry.name || "N/A"}</TableCell>
-<TableCell>
-  {typeof entry.project === "object" && entry.project !== null
-    ? entry.project.name || "N/A"
-    : entry.project || "N/A"}
-</TableCell>
-
-<TableCell>{typeof entry.workDone === "object" ? JSON.stringify(entry.workDone) : entry.workDone || "N/A"}</TableCell>
-<TableCell>{entry?.hours || "N/A"}</TableCell>
-
+                  <TableCell>{entry.date ? new Date(entry.date).toLocaleDateString() : "--"}</TableCell>
+                  <TableCell>{entry.name || "--"}</TableCell>
+                  <TableCell>
+                    {entry.isLeave
+                      ? entry.leaveType || "Leave"
+                      : entry.typeOfWork === "Extra Activity"
+                      ? entry.extraActivity || "Extra Activity"
+                      : entry.typeOfWork === "Regular Work"
+                      ? entry.project?.name || "Project"
+                      : entry.workDone || "--"}
+                  </TableCell>
+                  <TableCell>{entry.workDone || "--"}</TableCell>
+                  <TableCell>{entry.hours || "--"}</TableCell>
                 </TableRow>
               ))
             ) : (
@@ -180,30 +244,23 @@ const EnteredDataPage = () => {
         </Table>
       </TableContainer>
 
-      {/* Pagination */}
       <TablePagination
-        rowsPerPageOptions={[5, 10, 25]}
         component="div"
         count={totalRecords}
-        rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
+        rowsPerPage={rowsPerPage}
         onRowsPerPageChange={handleChangeRowsPerPage}
+        rowsPerPageOptions={[5, 10, 15, 20]}
       />
 
-      {/* Filter Menu */}
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
-        {timesheetList.map((entry) => (
-          <MenuItem key={entry._id} onClick={() => handleFilterSelect(entry[activeFilter])}>
-          {typeof entry[activeFilter] === "object" ? JSON.stringify(entry[activeFilter]) : entry[activeFilter]}
-        </MenuItem>
-        
+        {handleFilterValues().map((value, index) => (
+          <MenuItem key={index} onClick={() => handleFilterSelect(value)}>
+            {value}
+          </MenuItem>
         ))}
       </Menu>
-
-      <Button variant="contained" onClick={handleBack} sx={{ mt: 3 }}>
-        Back
-      </Button>
     </Container>
   );
 };

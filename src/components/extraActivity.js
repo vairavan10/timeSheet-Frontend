@@ -62,40 +62,56 @@ const ExtraActivityPage = () => {
   
 
   return (
-    <>
-    <SideMenu/>
-    <Container maxWidth="sm" sx={{ mt: 6 }}>
-      <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
-        <Typography variant="h5" gutterBottom align="center">
-          ➕ Add Extra Activity
-        </Typography>
+   <>
+  <Box sx={{ display: 'flex' }}>
+    <SideMenu />
+    
+    <Box
+      component="main"
+      sx={{
+        flexGrow: 1,
+        p: 3,
+        backgroundColor: 'background.default',
+        minHeight: '100vh',
+        pl: { xs: 0, sm: '200px' }, // Same as dashboard for consistency
+        overflowX: 'hidden',
+        overflowY: 'auto'
+      }}
+    >
+      <Container maxWidth="sm" sx={{ mt: 6 }}>
+        <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
+          <Typography variant="h5" gutterBottom align="center">
+            ➕ Add Extra Activity
+          </Typography>
 
-        <TextField
-          fullWidth
-          label="Activity Name"
-          value={activityName}
-          onChange={(e) => setActivityName(e.target.value)}
-          sx={{ mb: 2 }}
-        />
+          <TextField
+            fullWidth
+            label="Activity Name"
+            value={activityName}
+            onChange={(e) => setActivityName(e.target.value)}
+            sx={{ mb: 2 }}
+          />
 
-        <Button fullWidth variant="contained" onClick={handleAddActivity}>
-          Add Activity
-        </Button>
+          <Button fullWidth variant="contained" onClick={handleAddActivity}>
+            Add Activity
+          </Button>
 
-        {message && <Alert severity="success" sx={{ mt: 2 }}>{message}</Alert>}
-        {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+          {message && <Alert severity="success" sx={{ mt: 2 }}>{message}</Alert>}
+          {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
 
-        <Box sx={{ mt: 4 }}>
-          <Typography variant="h6">📋 Existing Activities:</Typography>
-          <List>
-            {activities.map((activity) => (
-              <ListItem key={activity._id}>• {activity.name}</ListItem>
-            ))}
-          </List>
-        </Box>
-      </Paper>
-    </Container>
-    </>
+          <Box sx={{ mt: 4 }}>
+            <Typography variant="h6">📋 Existing Activities:</Typography>
+            <List>
+              {activities.map((activity) => (
+                <ListItem key={activity._id}>• {activity.name}</ListItem>
+              ))}
+            </List>
+          </Box>
+        </Paper>
+      </Container>
+    </Box>
+  </Box>
+</>
 
   );
 };

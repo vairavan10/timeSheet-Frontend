@@ -8,7 +8,6 @@ import {
   TableBody,
   TableContainer,
   Paper,
-  Container,
   Typography,
   TablePagination,
   Menu,
@@ -18,8 +17,8 @@ import {
   Chip,
   Box,
 } from "@mui/material";
-import axios from "axios";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const EmployeeTable = () => {
@@ -60,7 +59,6 @@ const EmployeeTable = () => {
     fetchTimesheets(page, rowsPerPage);
   }, [page, rowsPerPage]);
 
-  // Fix: Handle project as an object and filter correctly
   useEffect(() => {
     setFilteredTimesheetList(
       timesheetList.filter((entry) => {
@@ -113,7 +111,7 @@ const EmployeeTable = () => {
     const uniqueValues = [
       ...new Set(
         timesheetList.map((entry) =>
-          column === "project" ? entry.project?.name || "N/A" : entry[column]
+          column === "project" ? entry.project?.name || "--" : entry[column]
         )
       ),
     ];
@@ -121,9 +119,14 @@ const EmployeeTable = () => {
   };
 
   return (
-    <>
-      <Container maxWidth="lg" sx={{ mt: 5 }}>
+    <Box sx={{ display: "flex", minHeight: "100vh" }}>
+      {/* Sidebar */}
+      <Box sx={{ width: "240px", bgcolor: "#f5f5f5", boxShadow: 1 }}>
         <Sidebar />
+      </Box>
+
+      {/* Main Content */}
+      <Box sx={{ flexGrow: 1, p: 4 }}>
         <Typography variant="h4" align="center" gutterBottom>
           Timesheet Records
         </Typography>
@@ -153,7 +156,6 @@ const EmployeeTable = () => {
           )}
         </Box>
 
-        {/* Clear Filters Button */}
         <Button
           variant="outlined"
           color="secondary"
@@ -163,13 +165,12 @@ const EmployeeTable = () => {
           Clear All Filters
         </Button>
 
-        <TableContainer component={Paper} sx={{ mt: 3 }}>
+        {/* Table Section */}
+        <TableContainer component={Paper}>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>
-                  <strong>Date</strong>
-                </TableCell>
+                <TableCell><strong>Date</strong></TableCell>
                 <TableCell>
                   <strong>Name</strong>
                   <IconButton onClick={(e) => handleFilterClick(e, "name")}>
@@ -188,39 +189,36 @@ const EmployeeTable = () => {
                     <FilterAltIcon />
                   </IconButton>
                 </TableCell>
-                <TableCell>
-                  <strong>Hours Worked</strong>
-                </TableCell>
+                <TableCell><strong>Hours Worked</strong></TableCell>
               </TableRow>
             </TableHead>
-
             <TableBody>
-              {filteredTimesheetList.length > 0 ? (
-                filteredTimesheetList
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((entry) => (
-                    <TableRow key={entry._id}>
-                      <TableCell>
-                        {new Date(entry.date).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>{entry.name}</TableCell>
-                      <TableCell>{entry.project?.name || "N/A"}</TableCell>
-                      <TableCell>{entry.workDone}</TableCell>
-                      <TableCell>{entry.hours}</TableCell>
-                    </TableRow>
-                  ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={5} align="center">
-                    No timesheet records found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
+  {filteredTimesheetList.length > 0 ? (
+    filteredTimesheetList
+      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+      .map((entry) => (
+        <TableRow key={entry._id}>
+          <TableCell>{new Date(entry.date).toLocaleDateString()}</TableCell>
+          <TableCell>{entry.name}</TableCell>
+          <TableCell>{entry.project?.name || "--"}</TableCell>
+          <TableCell>{entry.workDone}</TableCell>
+          <TableCell>
+  {entry.displayHours}
+</TableCell>
+
+        </TableRow>
+      ))
+  ) : (
+    <TableRow>
+      <TableCell colSpan={5} align="center">
+        No timesheet records found.
+      </TableCell>
+    </TableRow>
+  )}
+</TableBody>
           </Table>
         </TableContainer>
 
-        {/* Filter Menu */}
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
@@ -233,7 +231,6 @@ const EmployeeTable = () => {
           ))}
         </Menu>
 
-        {/* Pagination */}
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
@@ -247,8 +244,8 @@ const EmployeeTable = () => {
         <Button variant="contained" onClick={handleBack} sx={{ mt: 3 }}>
           Back
         </Button>
-      </Container>
-    </>
+      </Box>
+    </Box>
   );
 };
 

@@ -70,26 +70,27 @@ const SideMenu = () => {
   const toggleTheme = () => setDarkMode((prev) => !prev);
 
   return (
-    <Drawer
-      sx={{
-        width: open ? drawerWidth : collapsedDrawerWidth,
-        flexShrink: 0,
-        whiteSpace: "nowrap",
-        "& .MuiDrawer-paper": {
-          width: open ? drawerWidth : collapsedDrawerWidth,
-          transition: theme.transitions.create("width", {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.standard
-          }),
-          overflowX: "hidden",
-          boxSizing: "border-box",
-          backgroundColor: theme.palette.background.default,
-          paddingTop: "10px"
-        }
-      }}
-      variant="permanent"
-      anchor="left"
-    >
+<Drawer
+  sx={{
+    width: open ? drawerWidth : collapsedDrawerWidth,
+    flexShrink: 0,
+    whiteSpace: "nowrap",
+    "& .MuiDrawer-paper": {
+      width: open ? drawerWidth : collapsedDrawerWidth,
+      transition: theme.transitions.create("width", {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.standard
+      }),
+      overflow: "hidden", // ✅ Ensures no scroll inside drawer
+      height: "100vh", // ✅ Fix the height so it doesn't auto-grow
+      boxSizing: "border-box",
+      backgroundColor: theme.palette.background.default,
+      paddingTop: "10px"
+    }
+  }}
+  variant="permanent"
+  anchor="left"
+>
       <Toolbar
         sx={{
           display: "flex",
@@ -105,7 +106,7 @@ const SideMenu = () => {
 
       <Divider />
 
-      <Box sx={{ overflow: "auto" }}>
+      <Box sx={{ overflow: "hidden" }}> 
         <List>
           {filteredMenuItems.map((item) => (
             <Tooltip title={!open ? item.text : ""} placement="right" key={item.text}>

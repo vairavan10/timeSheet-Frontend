@@ -25,7 +25,9 @@ const InputSheet = () => {
     project: "",
     hours: "",
     workDone: "",
-    extraActivity: "", // ✅ new field
+    extraActivity: "",
+    typeOfWork: "regular",  // 👈 add this
+    leaveType: "",          // 👈 add this
     email: storedEmail
   });
   
@@ -35,6 +37,10 @@ const InputSheet = () => {
   const [projectList, setProjectList] = useState([]);
   const dateInputRef = useRef(null);
   const [extraActivityList, setExtraActivityList] = useState([]);
+  const [isProjectDisabled, setIsProjectDisabled] = useState(false);
+const [isExtraActivityDisabled, setIsExtraActivityDisabled] = useState(false);
+const [isHoursDisabled, setIsHoursDisabled] = useState(false);
+
 
 
   // Fetch Employees and Projects
@@ -61,8 +67,46 @@ const InputSheet = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    let updatedForm = { ...formData, [name]: value };
+  
+    // Logic for Type of Work
+    if (name === "typeOfWork") {
+      if (value === "leave") {
+        updatedForm.project = "";
+        updatedForm.extraActivity = "";
+        updatedForm.hours = "";
+        setIsProjectDisabled(true);
+        setIsExtraActivityDisabled(true);
+        setIsHoursDisabled(true);
+      } else {
+        setIsProjectDisabled(false);
+        setIsExtraActivityDisabled(false);
+        setIsHoursDisabled(false);
+      }
+    }
+  
+    // Logic for Project and Extra Activity conflict
+    if (name === "project") {
+      if (value === "") {
+        setIsExtraActivityDisabled(false);
+      } else {
+        updatedForm.extraActivity = "";
+        setIsExtraActivityDisabled(true);
+      }
+    }
+  
+    if (name === "extraActivity") {
+      if (value === "") {
+        setIsProjectDisabled(false);
+      } else {
+        updatedForm.project = "";
+        setIsProjectDisabled(true);
+      }
+    }
+  
+    setFormData(updatedForm);
   };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -160,28 +204,63 @@ const InputSheet = () => {
               )}
             </Select>
           </FormControl>
+          {/* Type of Work */}
+<FormControl fullWidth required>
+  <InputLabel id="typeOfWork-label">Type of Work</InputLabel>
+  <Select
+    labelId="typeOfWork-label"
+    name="typeOfWork"
+    value={formData.typeOfWork}
+    label="Type of Work"
+    onChange={handleChange}
+  >
+    <MenuItem value="regular">Regular Work</MenuItem>
+    <MenuItem value="leave">Leave</MenuItem>
+  </Select>
+</FormControl>
+
+{/* Leave Type (Only when Leave is selected) */}
+{formData.typeOfWork === "leave" && (
+  <FormControl fullWidth required>
+    <InputLabel id="leaveType-label">Leave Type</InputLabel>
+    <Select
+      labelId="leaveType-label"
+      name="leaveType"
+      value={formData.leaveType}
+      label="Leave Type"
+      onChange={handleChange}
+    >
+      <MenuItem value="half">Half Day</MenuItem>
+      <MenuItem value="full">Full Day</MenuItem>
+    </Select>
+  </FormControl>
+)}
+
 
           {/* Project Dropdown */}
-          <FormControl fullWidth required>
-            <InputLabel id="project-label">Project</InputLabel>
-            <Select
-              labelId="project-label"
-              name="project"
-              value={formData.project || ""}
-              label="Project"
-              onChange={handleChange}
-            >
-              {projectList.length > 0 ? (
-                projectList.map((project) => (
-                  <MenuItem key={project._id} value={project._id}>
-                    {project.name}
-                  </MenuItem>
-                ))
-              ) : (
-                <MenuItem disabled>No Projects Found</MenuItem>
-              )}
-            </Select>
-          </FormControl>
+          <FormControl fullWidth required disabled={isProjectDisabled}>
+  <InputLabel id="project-label">Project</InputLabel>
+  <Select
+    labelId="project-label"
+    name="project"
+    value={formData.project || ""}
+    label="Project"
+    onChange={handleChange}
+  >
+     <MenuItem value="">-- Select Project --</MenuItem>
+    {projectList.length > 0 ? (
+      projectList.map((project) => (
+        
+        <MenuItem key={project._id} value={project._id}>
+          {project.name}
+        </MenuItem>
+      ))
+    ) : (
+      <MenuItem disabled>No Projects Found</MenuItem>
+    )}
+  </Select>
+</FormControl>
+
 
           {/* Work Done Field */}
           <TextField
@@ -194,7 +273,7 @@ const InputSheet = () => {
             fullWidth
             required
           />
-          <FormControl fullWidth>
+         <FormControl fullWidth disabled={isExtraActivityDisabled}>
   <InputLabel id="extra-activity-label">Extra Activity</InputLabel>
   <Select
     labelId="extra-activity-label"
@@ -203,6 +282,8 @@ const InputSheet = () => {
     label="Extra Activity"
     onChange={handleChange}
   >
+    <MenuItem value="">-- Select Extra Activity --</MenuItem>
+
     {extraActivityList.length > 0 ? (
       extraActivityList.map((activity) => (
         <MenuItem key={activity._id} value={activity.name}>
@@ -216,17 +297,17 @@ const InputSheet = () => {
 </FormControl>
 
 
-          {/* Hours Field */}
-          <TextField
-            name="hours"
-            label="Number of Hours Worked"
-            type="number"
-            value={formData.hours}
-            onChange={handleChange}
-            inputProps={{ min: 0 }}
-            fullWidth
-            required
-          />
+<TextField
+  name="hours"
+  label="Number of Hours Worked"
+  type="number"
+  value={formData.hours}
+  onChange={handleChange}
+  inputProps={{ min: 0 }}
+  fullWidth
+  required
+  disabled={isHoursDisabled}
+/>
 
           {/* Buttons */}
           <Grid container spacing={2} sx={{ mt: 2 }}>
