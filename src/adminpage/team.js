@@ -28,7 +28,7 @@ const TeamForm = () => {
 
   // ✅ Fetch teams on component mount
   useEffect(() => {
-    fetch('http://localhost:8000/api/teams')
+    fetch('http://localhost:8080/api/teams')
       .then(async (response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -63,7 +63,7 @@ const TeamForm = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:8000/api/teams', {
+      const response = await fetch('http://localhost:8080/api/teams', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

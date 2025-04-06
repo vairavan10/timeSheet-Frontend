@@ -13,7 +13,7 @@ const EmployeeDetailsPage = () => {
   useEffect(() => {
     const fetchEmployeeDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/api/employees/${id}`); // Adjust URL to match your API endpoint
+        const response = await axios.get(`http://localhost:8080/api/employees/${id}`); // Adjust URL to match your API endpoint
         setEmployee(response.data); // Store the employee data
       } catch (error) {
         setError('Error fetching employee details');

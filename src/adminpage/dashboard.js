@@ -56,7 +56,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/managers'); 
+        const response = await axios.get('http://localhost:8080/api/managers'); 
         // Replace with your API endpoint
         
         const managers = response?.data?.managers; // Safely access the managers array

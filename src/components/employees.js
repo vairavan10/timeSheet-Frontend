@@ -19,6 +19,10 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AccountCircle, Email, Phone } from "@mui/icons-material";
 import SideMenu from "./sidebar";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
+
+
 const skillsList = ["React", "Node.js", "Python", "Java", "AWS", "UI/UX"];
 
 const Employee = () => {
@@ -45,6 +49,7 @@ const Employee = () => {
   const handleFileUpload = (event) => {
     setEmployee({ ...employee, certification: event.target.files[0] });
   };
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -61,7 +66,7 @@ const Employee = () => {
     };
   
     try {
-      const response = await axios.post("http://localhost:8000/api/employees/addemployee", employeeData, {
+      const response = await axios.post("http://localhost:8080/api/employees/addemployee", employeeData, {
         headers: { "Content-Type": "application/json" },
       });
   

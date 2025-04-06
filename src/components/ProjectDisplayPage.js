@@ -5,26 +5,31 @@ import { Box, Typography, TextField, Button, Paper, Grid, Snackbar, IconButton }
 import MuiAlert from '@mui/material/Alert';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SideMenu from './sidebar';
+import InputAdornment from '@mui/material/InputAdornment';
 
 const ProjectDisplayPage = () => {
   const { projectId } = useParams();
+  const navigate = useNavigate();
+
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [dependencies, setDependencies] = useState('');
   const [hoursSpent, setHoursSpent] = useState('');
   const [utilization, setUtilization] = useState('');
   const [status, setStatus] = useState('');
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const navigate = useNavigate();
 
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+
+  // Fetch project details
   useEffect(() => {
     const fetchProject = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/api/project/${projectId}`);
-        setProject(response.data.data);
+        const response = await axios.get(`http://localhost:8080/api/project/${projectId}`);
+        setProject(response.data?.data || null);
       } catch (error) {
         setError('Error fetching project data');
       } finally {
@@ -32,44 +37,56 @@ const ProjectDisplayPage = () => {
       }
     };
 
-    if (projectId) {
-      fetchProject();
-    }
+    if (projectId) fetchProject();
   }, [projectId]);
 
-  const fetchTotalHours = async (projectName) => {
-    try {
-      if (!projectName) return; // Wait for projectName to be available
-      const response = await axios.get(`http://localhost:8000/api/timesheet/total-hours/${projectId}`);
+  // Fetch total hours and utilization when dates change
+  useEffect(() => {
+    if (fromDate && toDate) {
+      fetchTotalHoursAndUtilization();
+    }
+  }, [fromDate, toDate]);
 
-      setHoursSpent(response.data.totalHours);
+  const fetchTotalHoursAndUtilization = async () => {
+    if (!fromDate || !toDate) return;
+
+    try {
+      const totalHoursUrl = `http://localhost:8080/api/timesheet/total-hours/${projectId}?fromDate=${fromDate}&toDate=${toDate}`;
+      const utilizationUrl = `http://localhost:8080/api/timesheet/utilization-project/${projectId}?fromDate=${fromDate}&toDate=${toDate}`;
+
+      const [totalHoursResponse, utilizationResponse] = await Promise.all([
+        axios.get(totalHoursUrl),
+        axios.get(utilizationUrl)
+      ]);
+
+      setHoursSpent(totalHoursResponse.data?.totalHours ?? '');
+      setUtilization(utilizationResponse.data?.utilization ?? '');
     } catch (error) {
-      console.error("Error fetching total hours:", error);
+      console.error("Error fetching total hours and utilization:", error);
     }
   };
 
-  useEffect(() => {
-    if (project?.name) {
-      fetchTotalHours(project.name); // Fetch total hours once project is loaded
-    }
-  }, [project]);
-
+  // Handle adding details
   const handleAddDetails = async () => {
-    if (!fromDate || !toDate || !dependencies.trim() || !hoursSpent.trim() || !utilization.trim() || !status.trim()) return;
+    if (!fromDate || !toDate || !dependencies.trim() || !status.trim()) {
+      alert("Please fill all fields before submitting.");
+      return;
+    }
 
     try {
-      await axios.post(`http://localhost:8000/api/projectdetails/${projectId}/details`, {
+      await axios.post(`http://localhost:8080/api/projectdetails/${projectId}/details`, {
         fromDate,
         toDate,
-        dependencies,
-        hoursSpent,
-        utilization,
-        status
+        dependencies: dependencies.trim(),
+        hoursSpent: Number(hoursSpent),
+        utilization: Number(utilization),
+        status: status.trim()
       });
+
       setOpenSnackbar(true);
       setTimeout(() => navigate(-1), 2000);
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error adding details:', error);
     }
   };
 
@@ -90,10 +107,25 @@ const ProjectDisplayPage = () => {
         <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: '600px', borderRadius: 2, mb: 3 }}>
           <Grid container spacing={2}>
             <Grid item xs={6}>
-              <TextField label="From Date" type="date" fullWidth InputLabelProps={{ shrink: true }} value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
+              <TextField 
+                label="From Date" 
+                type="date" 
+                fullWidth 
+                InputLabelProps={{ shrink: true }} 
+                value={fromDate} 
+                onChange={(e) => setFromDate(e.target.value)} 
+              />
             </Grid>
             <Grid item xs={6}>
-              <TextField label="To Date" type="date" fullWidth InputLabelProps={{ shrink: true }} value={toDate} onChange={(e) => setToDate(e.target.value)} />
+              <TextField 
+                label="To Date" 
+                type="date" 
+                fullWidth 
+                InputLabelProps={{ shrink: true }} 
+                value={toDate} 
+                onChange={(e) => setToDate(e.target.value)} 
+                inputProps={{ min: fromDate }} 
+              />
             </Grid>
           </Grid>
         </Paper>
@@ -101,19 +133,52 @@ const ProjectDisplayPage = () => {
         <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: '600px', borderRadius: 2 }}>
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              <TextField label="Dependencies / Issues" variant="outlined" fullWidth multiline rows={4} value={dependencies} onChange={(e) => setDependencies(e.target.value)} />
+              <TextField 
+                label="Dependencies / Issues" 
+                variant="outlined" 
+                fullWidth 
+                multiline 
+                rows={4} 
+                value={dependencies} 
+                onChange={(e) => setDependencies(e.target.value)} 
+              />
             </Grid>
             <Grid item xs={12}>
-              <TextField label="Hours Spent" variant="outlined" fullWidth value={hoursSpent} onChange={(e) => setHoursSpent(e.target.value)} />
+              <TextField 
+                label="Hours Spent" 
+                variant="outlined" 
+                fullWidth 
+                type="number"
+                value={hoursSpent} 
+                InputProps={{ readOnly: true }} // Non-editable field
+              />
             </Grid>
             <Grid item xs={12}>
-              <TextField label="Utilization" variant="outlined" fullWidth value={utilization} onChange={(e) => setUtilization(e.target.value)} />
+            <TextField 
+  label="Utilization" 
+  variant="outlined" 
+  fullWidth 
+  type="number"
+  value={utilization}
+  InputProps={{ 
+    readOnly: true,
+    endAdornment: <InputAdornment position="end">%</InputAdornment>
+  }} 
+/>
             </Grid>
             <Grid item xs={12}>
-              <TextField label="Status" variant="outlined" fullWidth value={status} onChange={(e) => setStatus(e.target.value)} />
+              <TextField 
+                label="Status" 
+                variant="outlined" 
+                fullWidth 
+                value={status} 
+                onChange={(e) => setStatus(e.target.value)} 
+              />
             </Grid>
             <Grid item xs={12} sx={{ textAlign: 'center' }}>
-              <Button variant="contained" color="primary" onClick={handleAddDetails}>Add Details</Button>
+              <Button variant="contained" color="primary" onClick={handleAddDetails}>
+                Add Details
+              </Button>
             </Grid>
           </Grid>
         </Paper>

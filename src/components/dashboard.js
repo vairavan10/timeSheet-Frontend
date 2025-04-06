@@ -38,7 +38,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/employees/employee-count');
+        const response = await fetch('http://localhost:8080/api/employees/employee-count');
         if (!response.ok) throw new Error('Failed to fetch employee data');
         
         const data = await response.json();
@@ -62,7 +62,7 @@ const Dashboard = () => {
       if (!storedEmail) return;
   
       try {
-        const response = await fetch(`http://localhost:8000/api/timesheet/getusertotalhours?email=${storedEmail}`);
+        const response = await fetch(`http://localhost:8080/api/timesheet/getusertotalhours?email=${storedEmail}`);
         if (!response.ok) throw new Error('Failed to fetch user hours');
         
         const data = await response.json();

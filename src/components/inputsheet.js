@@ -25,32 +25,39 @@ const InputSheet = () => {
     project: "",
     hours: "",
     workDone: "",
+    extraActivity: "", // ✅ new field
     email: storedEmail
   });
+  
 
   const navigate = useNavigate();
   const [employeeList, setEmployeeList] = useState([]);
   const [projectList, setProjectList] = useState([]);
   const dateInputRef = useRef(null);
+  const [extraActivityList, setExtraActivityList] = useState([]);
+
 
   // Fetch Employees and Projects
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [employeesRes, projectsRes] = await Promise.all([
-          axios.get("http://localhost:8000/api/employees/list"),
-          axios.get("http://localhost:8000/api/project")
+        const [employeesRes, projectsRes, extraActivityRes] = await Promise.all([
+          axios.get("http://localhost:8080/api/employees/list"),
+          axios.get("http://localhost:8080/api/project"),
+          axios.get("http://localhost:8080/api/extra-activities") // ✅ your GET API
         ]);
-
+  
         setEmployeeList(employeesRes.data.data || []);
         setProjectList(projectsRes.data.data || []);
+        setExtraActivityList(extraActivityRes.data || []); // ✅
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
-
+  
     fetchData();
   }, []);
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -64,7 +71,7 @@ const InputSheet = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/timesheet/addtimesheet",
+        "http://localhost:8080/api/timesheet/addtimesheet",
         formData
       );
 
@@ -187,6 +194,27 @@ const InputSheet = () => {
             fullWidth
             required
           />
+          <FormControl fullWidth>
+  <InputLabel id="extra-activity-label">Extra Activity</InputLabel>
+  <Select
+    labelId="extra-activity-label"
+    name="extraActivity"
+    value={formData.extraActivity}
+    label="Extra Activity"
+    onChange={handleChange}
+  >
+    {extraActivityList.length > 0 ? (
+      extraActivityList.map((activity) => (
+        <MenuItem key={activity._id} value={activity.name}>
+          {activity.name}
+        </MenuItem>
+      ))
+    ) : (
+      <MenuItem disabled>No Extra Activities Found</MenuItem>
+    )}
+  </Select>
+</FormControl>
+
 
           {/* Hours Field */}
           <TextField

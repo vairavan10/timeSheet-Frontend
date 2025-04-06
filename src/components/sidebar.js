@@ -28,6 +28,7 @@ import { SupervisorAccount } from "@mui/icons-material";
 
 import { NavLink } from "react-router-dom";
 import { ThemeContext } from "../context/ThemeContext";
+import { BsActivity } from "react-icons/bs";
 
 const drawerWidth = 240;
 const collapsedDrawerWidth = 70;
@@ -40,7 +41,8 @@ const menuItems = [
   { text: "Projects", icon: <AssignmentIcon />, path: "/projects" },
   { text: "Profile", icon: <SupervisorAccount />, path: "/profile" },
   { text: "Settings", icon: <SettingsIcon />, path: "/settings" },
-  { text: "ProfileView", icon: <SupervisorAccount />, path: "/Profileview" }
+  { text: "ProfileView", icon: <SupervisorAccount />, path: "/Profileview" },
+  {text: "ExtraActivity", icon:<BsActivity/>,path:"/extraActivity"}
 ];
 
 const SideMenu = () => {
@@ -55,7 +57,7 @@ const SideMenu = () => {
     if (item.text === "Profile") {
       return normalizedRole === "employee";
     }
-    if (["Employees", "Table", "Projects"].includes(item.text)) {
+    if (["Employees", "Table", "Projects","ExtraActivity"].includes(item.text)) {
       return ["ceo", "manager", "hr"].includes(normalizedRole);
     }
     if (item.text === "ProfileView") {

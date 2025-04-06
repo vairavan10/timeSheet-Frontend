@@ -22,6 +22,7 @@ import EmployeeDetailsPage from './components/EmployeeDetailsPage';
 import ProjectDisplayPage from './components/ProjectDisplayPage';
 import ProjectListPage from './components/projectview';
 import ViewReportPage from './components/viewReportPage';
+import ExtraActivityPage from './components/extraActivity';
 
 function App() {
   const { darkMode, setDarkMode } = useContext(ThemeContext);
@@ -47,6 +48,8 @@ function App() {
         <Route path="/add-projects" element={<Project />} />
         <Route path="/project/:projectId" element={<ProjectDisplayPage />} />
         <Route path="/project/:projectId/report" element={<ViewReportPage />} />
+        <Route path="/extraActivity" element={<ExtraActivityPage />} />
+
 
 
 

@@ -48,7 +48,7 @@ const EnteredDataPage = () => {
 
       setTimesheetList([]); // Clear previous data before fetching new
 
-      const response = await axios.get("http://localhost:8000/api/timesheet/getusertimesheets", {
+      const response = await axios.get("http://localhost:8080/api/timesheet/getusertimesheets", {
         params: {
           page: page + 1,
           limit: rowsPerPage,
