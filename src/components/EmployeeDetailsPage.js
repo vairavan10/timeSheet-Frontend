@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom'; // To get the employee ID from the URL
 import axios from 'axios';
 import '../style/profile.css'; // Import the CSS
-
+import Layout from './layout';
 const EmployeeDetailsPage = () => {
   const { id } = useParams(); // Get the employee ID from the URL
   const [employee, setEmployee] = useState(null);
@@ -29,6 +29,7 @@ const EmployeeDetailsPage = () => {
   if (!employee) return <p>No employee found</p>;
 
   return (
+    <Layout>
     <div className="profile-container">
       <div className="profile-header">
         <h2>{employee.name}</h2>
@@ -62,6 +63,7 @@ const EmployeeDetailsPage = () => {
         </div>
       </div>
     </div>
+    </Layout>
   );
 };
 

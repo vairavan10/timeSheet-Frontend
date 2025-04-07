@@ -20,7 +20,7 @@ import { AccountCircle, Email, Phone } from "@mui/icons-material";
 import SideMenu from "./sidebar";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
+import Layout from "./layout";
 
 
 const skillsList = ["React", "Node.js", "Python", "Java", "AWS", "UI/UX"];
@@ -94,8 +94,9 @@ const Employee = () => {
   
 
   return (
-    <>
-      <SideMenu />
+    
+    <Layout>
+      {/* <SideMenu /> */}
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh" bgcolor="#f4f6f8" p={2}>
         <Paper elevation={3} sx={{ p: 4, width: "600px", borderRadius: "12px" }}>
           <Typography variant="h5" gutterBottom align="center" fontWeight="bold">
@@ -175,8 +176,7 @@ const Employee = () => {
           </LocalizationProvider>
         </Paper>
       </Box>
-    </>
-  );
+      </Layout>  );
 };
 
 export default Employee;

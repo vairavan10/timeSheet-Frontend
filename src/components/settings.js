@@ -15,6 +15,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './sidebar';
 import axios from 'axios';
+import Layout from './layout';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -78,8 +79,9 @@ const Settings = () => {
   };
   
   return (
+    <Layout>
     <Box sx={{ display: 'flex' }}>
-      <Sidebar />
+      {/* <Sidebar /> */}
       <Box
         sx={{
           flex: 1,
@@ -159,6 +161,7 @@ const Settings = () => {
         </Dialog>
       </Box>
     </Box>
+    </Layout>
   );
 };
 

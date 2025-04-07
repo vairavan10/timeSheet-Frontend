@@ -24,13 +24,13 @@ import PeopleIcon from "@mui/icons-material/People";
 import SettingsIcon from "@mui/icons-material/Settings";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
-import { SupervisorAccount } from "@mui/icons-material";
+import { SummarizeOutlined, SupervisorAccount } from "@mui/icons-material";
 
 import { NavLink } from "react-router-dom";
 import { ThemeContext } from "../context/ThemeContext";
 import { BsActivity } from "react-icons/bs";
 
-const drawerWidth = 240;
+const drawerWidth = 200;
 const collapsedDrawerWidth = 70;
 
 const menuItems = [
@@ -42,12 +42,15 @@ const menuItems = [
   { text: "Profile", icon: <SupervisorAccount />, path: "/profile" },
   { text: "Settings", icon: <SettingsIcon />, path: "/settings" },
   { text: "ProfileView", icon: <SupervisorAccount />, path: "/Profileview" },
-  {text: "ExtraActivity", icon:<BsActivity/>,path:"/extraActivity"}
+  {text: "ExtraActivity", icon:<BsActivity/>,path:"/extraActivity"},
+  {text: "EmployeeLog", icon:<SummarizeOutlined/>,path:"/employeeSumarry"}
 ];
 
-const SideMenu = () => {
+const SideMenu = ({ open, setOpen }) => {
+  
+
   const theme = useTheme();
-  const [open, setOpen] = useState(true);
+  // const [open, setOpen] = useState(true);
   const { darkMode, setDarkMode } = useContext(ThemeContext);
 
   const userData = JSON.parse(localStorage.getItem("user")) || {};
@@ -57,7 +60,7 @@ const SideMenu = () => {
     if (item.text === "Profile") {
       return normalizedRole === "employee";
     }
-    if (["Employees", "Table", "Projects","ExtraActivity"].includes(item.text)) {
+    if (["Employees", "Table", "Projects","ExtraActivity","EmployeeLog"].includes(item.text)) {
       return ["ceo", "manager", "hr"].includes(normalizedRole);
     }
     if (item.text === "ProfileView") {

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button } from '@mui/material';
 import axios from 'axios';
 import SideMenu from './sidebar';
+import Layout from './layout';
 
 const EmployeesListPage = () => {
   const [employees, setEmployees] = useState([]);
@@ -27,9 +28,11 @@ const EmployeesListPage = () => {
   if (error) return <p>{error}</p>;
 
   return (
-    <>
-      <SideMenu />
-      <div style={{ marginLeft: '250px', padding: '20px' }}> {/* Adjust the margin-left to your sidebar width */}
+    
+    <Layout>
+      {/* <SideMenu /> */}
+      <div style={{ padding: '20px' }}>
+ {/* Adjust the margin-left to your sidebar width */}
         <h2>Employee List</h2>
         <TableContainer component={Paper}>
           <Table>
@@ -62,7 +65,7 @@ const EmployeesListPage = () => {
           </Table>
         </TableContainer>
       </div>
-    </>
+      </Layout>
   );
 };
 

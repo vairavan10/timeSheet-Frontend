@@ -14,6 +14,7 @@ import {
 import SideMenu from "./sidebar";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import Layout from "./layout";
 
 const InputSheet = () => {
   const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -151,7 +152,8 @@ const [isHoursDisabled, setIsHoursDisabled] = useState(false);
 
   return (
     <>
-      <SideMenu />
+      {/* <SideMenu /> */}
+      <Layout>
       <Container maxWidth="md" sx={{ mt: 5 }}>
         <Typography variant="h4" align="center" gutterBottom>
           Time Sheet
@@ -330,6 +332,7 @@ const [isHoursDisabled, setIsHoursDisabled] = useState(false);
           </Grid>
         </Box>
       </Container>
+      </Layout>
     </>
   );
 };

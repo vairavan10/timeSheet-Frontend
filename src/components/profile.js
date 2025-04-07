@@ -3,6 +3,7 @@ import axios from "axios";
 import { FaEnvelope, FaPhoneAlt, FaBriefcase, FaCalendarAlt, FaUsersCog, FaLaptopCode } from "react-icons/fa";
 import "../style/profile.css"; // External CSS for styling
 import SideMenu from "./sidebar";
+import Layout from "./layout";
 
 const Profile = () => {
   const [employee, setEmployee] = useState(null);
@@ -46,8 +47,8 @@ const Profile = () => {
   const formattedJoiningDate = new Date(employee.joiningDate).toLocaleDateString();
 
   return (
-    <>
-    <SideMenu/>
+    <Layout>
+    {/* <SideMenu/> */}
     <div className="profile-container">
       <div className="profile-header">
         <h2>{employee.name}</h2>
@@ -92,8 +93,7 @@ const Profile = () => {
         </div>
       </div>
     </div>
-    </>
-    
+    </Layout>    
   );
 };
 

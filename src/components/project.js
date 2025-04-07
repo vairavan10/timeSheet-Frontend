@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Box, TextField, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import SideMenu from './sidebar';
+import Layout from './layout';
 
 const Project = () => {
   const [projectName, setProjectName] = useState('');
@@ -28,8 +29,9 @@ const Project = () => {
   };
 
   return (
+    <Layout>
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-      <SideMenu />
+      {/* <SideMenu /> */}
       <TextField
         label="Enter Project Name"
         variant="outlined"
@@ -41,6 +43,7 @@ const Project = () => {
         Add Project
       </Button>
     </Box>
+    </Layout>
   );
 };
 

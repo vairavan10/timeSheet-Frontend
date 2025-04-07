@@ -6,6 +6,7 @@ import MuiAlert from '@mui/material/Alert';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SideMenu from './sidebar';
 import InputAdornment from '@mui/material/InputAdornment';
+import Layout from './layout';
 
 const ProjectDisplayPage = () => {
   const { projectId } = useParams();
@@ -94,8 +95,9 @@ const ProjectDisplayPage = () => {
   if (error) return <p>{error}</p>;
 
   return (
+    <Layout>
     <Box sx={{ display: 'flex', height: '100vh' }}>
-      <SideMenu />
+      {/* <SideMenu /> */}
       <Box sx={{ flex: 1, p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', maxWidth: '600px', mb: 2 }}>
           <IconButton onClick={() => navigate(-1)}>
@@ -195,6 +197,7 @@ const ProjectDisplayPage = () => {
         </MuiAlert>
       </Snackbar>
     </Box>
+    </Layout>
   );
 };
 

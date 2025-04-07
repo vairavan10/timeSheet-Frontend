@@ -7,6 +7,7 @@ import {
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import SideMenu from './sidebar';
+import Layout from './layout';
 
 const ProjectListPage = () => {
   const [projects, setProjects] = useState([]);
@@ -103,8 +104,9 @@ const ProjectListPage = () => {
   if (error) return <p>{error}</p>;
 
   return (
+    <Layout>
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-      <SideMenu />
+      {/* <SideMenu /> */}
       <Box sx={{ flex: 1, p: 4 }}>
         <Typography variant="h4" sx={{ mb: 3, textAlign: 'center' }}>
           📁 All Projects Overview
@@ -216,6 +218,7 @@ const ProjectListPage = () => {
 
       </Box>
     </Box>
+    </Layout>
   );
 };
 

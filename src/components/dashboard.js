@@ -18,6 +18,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import EnteredDataPage from './currentdata';
+import Layout from './layout';
 
 const Dashboard = () => {
   const theme = useTheme();
@@ -85,8 +86,9 @@ const Dashboard = () => {
   }, []);
 
   return (
+    <Layout>
     <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-      <SideMenu />
+      {/* <SideMenu /> */}
 
       <Box
         component="main"
@@ -203,6 +205,7 @@ const Dashboard = () => {
         </Box>
       </Box>
     </Box>
+    </Layout>
   );
 };
 
