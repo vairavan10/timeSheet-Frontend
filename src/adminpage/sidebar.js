@@ -10,14 +10,18 @@ import SettingsIcon from '@mui/icons-material/Settings';
 
 const SidebarContainer = styled(Box)(({ theme }) => ({
   width: '240px',
-  height: '100vh',
+  minHeight: '100vh', // allows it to grow with page height
+  height: '100%',
   backgroundColor: '#1e1e2f',
   color: '#ffffff',
   display: 'flex',
   flexDirection: 'column',
   padding: theme.spacing(2),
   boxShadow: '2px 0 5px rgba(0,0,0,0.2)',
+  position: 'sticky',
+  top: 0,
 }));
+
 
 const SidebarTitle = styled(Typography)(({ theme }) => ({
   fontSize: '1.5rem',

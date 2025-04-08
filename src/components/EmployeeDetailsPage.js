@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom'; // To get the employee ID from the URL
-import axios from 'axios';
+import axios from '../axios';
 import '../style/profile.css'; // Import the CSS
 import Layout from './layout';
 const EmployeeDetailsPage = () => {
@@ -13,7 +13,7 @@ const EmployeeDetailsPage = () => {
   useEffect(() => {
     const fetchEmployeeDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/employees/${id}`); // Adjust URL to match your API endpoint
+        const response = await axios.get(`api/employees/${id}`); // Adjust URL to match your API endpoint
         setEmployee(response.data); // Store the employee data
       } catch (error) {
         setError('Error fetching employee details');

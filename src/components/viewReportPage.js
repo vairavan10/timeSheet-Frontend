@@ -34,7 +34,7 @@ const ViewReportPage = () => {
     const fetchDateRanges = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/projectdetails/${projectId}/available-dates`
+          `api/projectdetails/${projectId}/available-dates`
         );
         setDateRanges(response.data);
       } catch (error) {
@@ -56,7 +56,7 @@ const ViewReportPage = () => {
     setError(null);
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/projectdetails/${projectId}/details`,
+        `api/projectdetails/${projectId}/details`,
         { params: { fromDate: selectedRange.fromDate, toDate: selectedRange.toDate } }
       );
       setReport(response.data);

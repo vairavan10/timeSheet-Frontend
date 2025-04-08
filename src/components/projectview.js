@@ -25,21 +25,21 @@ const ProjectListPage = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const projectRes = await axios.get('http://localhost:8080/api/project');
+        const projectRes = await axios.get('api/project');
         const projectList = projectRes.data.data;
         setProjects(projectList);
 
         const reportsData = {};
         for (const project of projectList) {
           try {
-            const reportRes = await axios.get(`http://localhost:8080/api/projectdetails/${project._id}/latest-report`);
+            const reportRes = await axios.get(`api/projectdetails/${project._id}/latest-report`);
             reportsData[project._id] = reportRes.data;
           } catch {
             reportsData[project._id] = null;
           }
         }
 
-        const dateRes = await axios.get('http://localhost:8080/api/projectdetails/available-dates');
+        const dateRes = await axios.get('api/projectdetails/available-dates');
         setAvailableDates(dateRes.data?.dates ?? []);
 
         setReports(reportsData);
@@ -62,7 +62,7 @@ const ProjectListPage = () => {
       const latestReports = {};
       for (const project of projects) {
         try {
-          const reportRes = await axios.get(`http://localhost:8080/api/projectdetails/${project._id}/latest-report`);
+          const reportRes = await axios.get(`api/projectdetails/${project._id}/latest-report`);
           latestReports[project._id] = reportRes.data;
         } catch {
           latestReports[project._id] = null;
@@ -77,7 +77,7 @@ const ProjectListPage = () => {
     for (const project of projects) {
       try {
         const reportRes = await axios.get(
-          `http://localhost:8080/api/projectdetails/${project._id}/report-by-date?fromDate=${fromDate}&toDate=${toDate}`
+          `api/projectdetails/${project._id}/report-by-date?fromDate=${fromDate}&toDate=${toDate}`
         );
         const reportData = reportRes.data;
         updatedReports[project._id] = Array.isArray(reportData) ? reportData[0] : reportData;
@@ -252,12 +252,12 @@ export default ProjectListPage;
 //       try {
 //         setLoading(true);
 
-//         const projectRes = await axios.get('http://localhost:8080/api/project');
+//         const projectRes = await axios.get('api/project');
 //         const projectsList = projectRes.data.data;
 //         setProjects(projectsList);
 
 //         const reportsRequests = projectsList.map((project) =>
-//           axios.get(`http://localhost:8080/api/projectdetails/${project._id}/latest-report`)
+//           axios.get(`api/projectdetails/${project._id}/latest-report`)
 //         );
 
 //         const reportsResponses = await Promise.all(reportsRequests);
@@ -266,7 +266,7 @@ export default ProjectListPage;
 //           allReports[project._id] = reportsResponses[index].data;
 //         });
 
-//         const weekMapRes = await axios.post('http://localhost:8080/api/projectdetails/week-options', allReports);
+//         const weekMapRes = await axios.post('api/projectdetails/week-options', allReports);
         
 //         const weekMapData = weekMapRes.data;
 //         console.log("📦 Week map response:", weekMapData);
@@ -293,7 +293,7 @@ export default ProjectListPage;
 //       try {
 //         const reportPromises = projects.map(async (project) => {
 //           if (selectedWeekKey === 'default') {
-//             const res = await axios.get(`http://localhost:8080/api/projectdetails/${project._id}/latest-report`);
+//             const res = await axios.get(`api/projectdetails/${project._id}/latest-report`);
 //             return { id: project._id, report: res.data };
 //           } else {
 //             const selectedWeek = weekMap[selectedWeekKey];
@@ -306,7 +306,7 @@ export default ProjectListPage;
 //               return { id: project._id, report: null };
 //             }
         
-//             const res = await axios.get(`http://localhost:8080/api/projectdetails/${project._id}/report`, {
+//             const res = await axios.get(`api/projectdetails/${project._id}/report`, {
 //               params: {
 //                 fromDate: selectedWeek.start,
 //                 toDate: selectedWeek.end

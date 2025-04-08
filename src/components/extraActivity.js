@@ -22,7 +22,7 @@ const ExtraActivityPage = () => {
 
   const fetchActivities = async () => {
     try {
-      const res = await axios.get('http://localhost:8080/api/extra-activities');
+      const res = await axios.get('api/extra-activities');
       setActivities(res.data);
     } catch (err) {
       console.error('Error fetching activities', err);
@@ -44,7 +44,7 @@ const ExtraActivityPage = () => {
       const createdBy = user?.id;
   
       const res = await axios.post(
-        'http://localhost:8080/api/extra-activities',
+        'api/extra-activities',
         {
           name: activityName,
           createdBy: createdBy,

@@ -1,79 +1,149 @@
-/* Background */
+/* Main Container */
 .login-container {
-    height: 100vh;
-    background: linear-gradient(135deg, #74ebd5, #ACB6E5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  }
+  height: 100vh;
+  display: flex;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(to right, #fdfbfb, #ebedee);
+}
+
+/* Wrapper for the two sections */
+.login-wrapper {
+  display: flex;
+  width: 90%;
+  max-width: 1000px;
+  margin: auto;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+/* Left Side - Image with overlay */
+.login-left {
+  flex: 1;
+  background: url('../asset/bg-image.jpg') no-repeat center center;
+  background-size: cover;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.1);
   
-  /* Login Box */
-  .login-box {
-    background: white;
-    padding: 40px 30px;
-    border-radius: 12px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-    width: 350px;
-    text-align: center;
-    transition: transform 0.3s ease;
-  }
-  
-  /* .login-box:hover {
-    transform: translateY(-5px);
-  }
-   */
-  /* Logo */
-  .logo {
-    width: 80px;
-    height: auto;
-    margin-bottom: 20px;
-  }
-  
-  /* Heading and Text */
-  .login-box h2 {
-    margin-bottom: 10px;
-    color: #333;
-  }
-  
-  .login-box p {
-    font-size: 14px;
-    color: #777;
-    margin-bottom: 30px;
-  }
-  
-  /* Form Inputs */
-  .login-form {
-    display: flex;
+}
+
+.login-left::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.1); /* More frosty glass */
+  backdrop-filter: blur(10px); /* Glass blur */
+  -webkit-backdrop-filter: blur(10px); /* Safari support */
+  border: 1px solid rgba(255, 255, 255, 0.3); /* Subtle border for glass edge */
+}
+
+
+.login-quote {
+  position: relative;
+  z-index: 1;
+  color: white;
+  font-size: 1.6rem;
+  text-align: center;
+  padding: 30px;
+  max-width: 80%;
+  font-style: italic;
+  font-weight: 500;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* For better contrast on glass */
+}
+
+
+/* Right Side - Login Form */
+.login-box {
+  flex: 1;
+  padding: 50px 40px;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo {
+  width: 120px;
+  margin-bottom: 20px;
+}
+
+.login-box h2 {
+  color: #222;
+  margin-bottom: 10px;
+}
+
+.login-box p {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 25px;
+}
+
+/* Form Elements */
+.login-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.login-input {
+  padding: 12px 15px;
+  margin-bottom: 18px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  transition: all 0.3s ease;
+  font-size: 15px;
+}
+
+.login-input:focus {
+  border-color: #507aec;
+  background-color: #fff;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(80, 122, 236, 0.1);
+}
+
+.login-button {
+  background-color: #507aec;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.login-button:hover {
+  background-color: #3f65d1;
+}
+
+.create-account {
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.create-account span {
+  color: #507aec;
+  cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .login-wrapper {
     flex-direction: column;
+    width: 95%;
   }
-  
-  .login-input {
-    padding: 12px 15px;
-    margin-bottom: 20px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    outline: none;
-    transition: border 0.3s;
+
+  .login-left {
+    height: 250px;
   }
-  
-  .login-input:focus {
-    border: 1px solid #7c84f5;
+
+  .login-box {
+    padding: 30px 20px;
   }
-  
-  /* Button */
-  .login-button {
-    background-color: #507aec;
-    color: white;
-    border: none;
-    padding: 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
-  }
-  
-  .login-button:hover {
-    background-color: #6880ec;
-  }
-  
+}

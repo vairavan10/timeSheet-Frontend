@@ -13,8 +13,8 @@ import {
   TableRow,
 } from '@mui/material';
 import { styled } from '@mui/system';
+import axios from '../axios'; // Make sure this points to your axios instance
 
-// Styling
 const FormContainer = styled(Paper)(({ theme }) => ({
   padding: theme?.spacing(4) || '32px',
   maxWidth: '600px',
@@ -26,36 +26,35 @@ const TeamForm = () => {
   const [teamName, setTeamName] = useState('');
   const [teams, setTeams] = useState([]);
 
-  // ✅ Fetch teams on component mount
+  // ✅ Fetch teams on mount using axios
   useEffect(() => {
-    fetch('http://localhost:8080/api/teams')
-      .then(async (response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const result = await response.json();
+    const fetchTeams = async () => {
+      try {
+        const response = await axios.get('/api/teams');
+        const result = response.data;
 
-        console.log('Fetched teams:', result.teams); // Debug log
+        console.log('Fetched teams:', result.teams);
 
         if (Array.isArray(result.teams)) {
-          const formattedTeams = result.teams.map(team => ({
+          const formattedTeams = result.teams.map((team) => ({
             name: team.name,
-            createdAt: new Date(team.createdAt).toLocaleString(), // Format the date
+            createdAt: new Date(team.createdAt).toLocaleString(),
           }));
-
           setTeams(formattedTeams);
         } else {
           console.error('Teams data is not an array');
           setTeams([]);
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error('Error fetching teams:', error);
-        setTeams([]); // Fail-safe: set an empty array
-      });
+        setTeams([]);
+      }
+    };
+
+    fetchTeams();
   }, []);
 
-  // ✅ Handle form submission to create a team
+  // ✅ Create new team using axios
   const handleSubmit = async () => {
     if (!teamName.trim()) {
       console.log('Team name cannot be empty');
@@ -63,20 +62,12 @@ const TeamForm = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:8080/api/teams', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name: teamName }),
-      });
+      const response = await axios.post('/api/teams', { name: teamName });
+      const res = response.data;
 
-      const res = await response.json();
-
-      if (response.ok && res.success) {
+      if (res.success) {
         console.log('Team created successfully!');
 
-        // Add new team to state list directly
         const newTeam = {
           name: teamName,
           createdAt: new Date().toLocaleString(),
@@ -118,34 +109,36 @@ const TeamForm = () => {
           </Button>
         </FormContainer>
 
-        {/* ✅ Display teams if available */}
         {teams.length > 0 ? (
-          <TableContainer component={Paper} sx={{ marginTop: 4 }}>
-            <Typography variant="h6" sx={{ padding: 2 }}>
-              Existing Teams
-            </Typography>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell><strong>Team Name</strong></TableCell>
-                  <TableCell><strong>Created Date</strong></TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {teams.map((team, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{team.name}</TableCell>
-                    <TableCell>{team.createdAt}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        ) : (
-          <Typography variant="body1" sx={{ marginTop: 4 }}>
-            No teams found.
-          </Typography>
-        )}
+  <Box display="flex" justifyContent="center" mt={4}>
+    <TableContainer component={Paper} sx={{ maxWidth: 600, width: '100%' }}>
+      <Typography variant="h6" sx={{ padding: 2 }}>
+        Existing Teams
+      </Typography>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell><strong>Team Name</strong></TableCell>
+            <TableCell><strong>Created Date</strong></TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {teams.map((team, index) => (
+            <TableRow key={index}>
+              <TableCell>{team.name}</TableCell>
+              <TableCell>{team.createdAt}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  </Box>
+) : (
+  <Typography variant="body1" sx={{ marginTop: 4 }}>
+    No teams found.
+  </Typography>
+)}
+
       </Box>
     </Box>
   );

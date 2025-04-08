@@ -1,152 +1,112 @@
 import React, { useState } from 'react';
-import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  Paper,
-  Alert,
-  Link,
-} from '@mui/material';
-import { styled } from '@mui/system';
-import { useNavigate } from 'react-router-dom'; // Navigate to create user page
-import kologos from '../asset/kologos.png'; // update the path if needed
+import { useNavigate } from 'react-router-dom';
+import '../style/login.css';
+import kologos from '../asset/kologos.png';
+import axios from '../axios';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
 
-const LoginContainer = styled(Box)({
-  height: '100vh',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  backgroundColor: '#f5f5f5',
-});
-
-const LoginBox = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(4),
-  maxWidth: 400,
-  width: '100%',
-  textAlign: 'center',
-}));
-
-const Logo = styled('img')({
-  width: '100px',
-  marginBottom: '1rem',
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const navigate = useNavigate(); // React Router navigate
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // 'success' | 'error'
+  const navigate = useNavigate();
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      const response = await fetch('http://localhost:8080/api/users/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-        }),
-      });
-  
-      const data = await response.json();
-  
-      if (response.ok) {
-        console.log('Login successful:', data);
-  
-        // Save user to localStorage
-        localStorage.setItem('user', JSON.stringify(data.user));
-  
-        alert(`Login successful! Welcome ${data.user.email} as ${data.user.role}`);
-        console.log("full", data.user);  // Log full user data
-  
-        // ✅ Navigate based on user role
+      const response = await axios.post('api/users/login', { email, password });
+      const data = response.data;
+
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      // Show success Snackbar
+      setSnackbarMessage('Login successful!');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+
+      // Navigate after a short delay
+      setTimeout(() => {
         if (data.user.role === 'admin') {
-          navigate('/admindashboard'); // Update this route if needed
+          navigate('/admindashboard');
         } else {
-          navigate('/dashboard'); // Regular user dashboard
+          navigate('/dashboard');
         }
-  
-      } else {
-        // Show error from backend (like incorrect password)
-        setError(data.message);
-      }
+      }, 1500);
     } catch (error) {
-      console.error('Login error:', error);
-      setError('An error occurred. Try again later.');
+      setSnackbarMessage(error.response?.data?.message || 'Something went wrong. Try again.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
     }
   };
 
-  
-  
-
-  const handleCreateAccount = () => {
-    navigate('/register');
-  };
-
   return (
-    <LoginContainer>
-      <LoginBox elevation={3}>
-        <Logo src={kologos} alt="Time Sheet Logo" />
-        <Typography variant="h5" gutterBottom>
-          Welcome to Time Sheet
-        </Typography>
-        <Typography variant="body1" gutterBottom>
-          Please login to continue
-        </Typography>
+    <div className="login-container">
+      <div className="login-wrapper">
+        {/* Left Section */}
+        <div className="login-left">
+          <div className="login-quote">
+            <img src={kologos} alt="Logo" style={{ width: '250px' }} />
+            <h2 style={{ color: '#444' }}>Time Sheet</h2>
+            <p>“Where your time goes, your growth flows”</p>
+          </div>
+        </div>
 
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
+        {/* Right Section */}
+        <div className="login-box">
+          <h2>Welcome Back!</h2>
+          <p>Please login to continue</p>
 
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-          <TextField
-            fullWidth
-            label="Email"
-            type="email"
-            variant="outlined"
-            margin="normal"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <TextField
-            fullWidth
-            label="Password"
-            type="password"
-            variant="outlined"
-            margin="normal"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            fullWidth
-            sx={{ mt: 2 }}
-          >
-            Login
-          </Button>
-        </Box>
+          <form className="login-form" onSubmit={handleSubmit}>
+            <input
+              type="email"
+              className="login-input"
+              placeholder="Email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <input
+              type="password"
+              className="login-input"
+              placeholder="Password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button type="submit" className="login-button">Login</button>
+          </form>
 
-        <Typography variant="body2" sx={{ mt: 2 }}>
-          Don't have an account?{' '}
-          <Link component="button" onClick={handleCreateAccount}>
-            Create New User
-          </Link>
-        </Typography>
-      </LoginBox>
-    </LoginContainer>
+          <p className="create-account">
+            Don’t have an account?{' '}
+            <span onClick={() => navigate('/register')}>Create New User</span>
+          </p>
+        </div>
+      </div>
+
+      {/* ✅ Dynamic Snackbar (Success/Error) */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          sx={{ width: '100%' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+    </div>
   );
 };
 
 export default LoginPage;
-

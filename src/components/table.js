@@ -49,7 +49,7 @@ const EnteredDataPage = () => {
 
       setTimesheetList([]);
 
-      const response = await axios.get("http://localhost:8080/api/timesheet/getalltimesheets", {
+      const response = await axios.get("api/timesheet/getalltimesheets", {
         params: {
           page: page + 1,
           limit: rowsPerPage,

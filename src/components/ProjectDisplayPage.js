@@ -29,7 +29,7 @@ const ProjectDisplayPage = () => {
   useEffect(() => {
     const fetchProject = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/project/${projectId}`);
+        const response = await axios.get(`api/project/${projectId}`);
         setProject(response.data?.data || null);
       } catch (error) {
         setError('Error fetching project data');
@@ -52,8 +52,8 @@ const ProjectDisplayPage = () => {
     if (!fromDate || !toDate) return;
 
     try {
-      const totalHoursUrl = `http://localhost:8080/api/timesheet/total-hours/${projectId}?fromDate=${fromDate}&toDate=${toDate}`;
-      const utilizationUrl = `http://localhost:8080/api/timesheet/utilization-project/${projectId}?fromDate=${fromDate}&toDate=${toDate}`;
+      const totalHoursUrl = `api/timesheet/total-hours/${projectId}?fromDate=${fromDate}&toDate=${toDate}`;
+      const utilizationUrl = `api/timesheet/utilization-project/${projectId}?fromDate=${fromDate}&toDate=${toDate}`;
 
       const [totalHoursResponse, utilizationResponse] = await Promise.all([
         axios.get(totalHoursUrl),
@@ -75,7 +75,7 @@ const ProjectDisplayPage = () => {
     }
 
     try {
-      await axios.post(`http://localhost:8080/api/projectdetails/${projectId}/details`, {
+      await axios.post(`api/projectdetails/${projectId}/details`, {
         fromDate,
         toDate,
         dependencies: dependencies.trim(),

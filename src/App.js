@@ -58,12 +58,12 @@ function App() {
 
         {/* Admin Routes */}
         <Route path="/admindashboard" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="manager" element={<ManagerForm />} />
-          <Route path="teams" element={<TeamForm />} />
+  <Route index element={<AdminDashboard />} />
+  <Route path="manager" element={<ManagerForm />} />
+  <Route path="teams" element={<TeamForm />} />
+  <Route path="adminsettings" element={<AdminSettings />} />
+</Route>
 
-          <Route path="adminsettings" element={<AdminSettings />} />
-        </Route>
 
       
         

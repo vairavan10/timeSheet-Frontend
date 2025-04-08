@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import SideMenu from './sidebar';
+import axios from 'axios';
 import Layout from './layout';
 
 const Project = () => {
@@ -12,16 +12,11 @@ const Project = () => {
     if (!projectName.trim()) return;
 
     try {
-      const response = await fetch('http://localhost:8080/api/project', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: projectName }),
-      });
+      const response = await axios.post('/api/project', { name: projectName });
 
-      if (response.ok) {
-        const data = await response.json();
+      if (response.status === 200 || response.status === 201) {
         setProjectName('');
-        navigate(`/projects`);  // Redirect to the project details page
+        navigate('/projects'); // Redirect to project list page
       }
     } catch (error) {
       console.error('Error:', error);
@@ -30,19 +25,18 @@ const Project = () => {
 
   return (
     <Layout>
-    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-      {/* <SideMenu /> */}
-      <TextField
-        label="Enter Project Name"
-        variant="outlined"
-        value={projectName}
-        onChange={(e) => setProjectName(e.target.value)}
-        sx={{ mb: 2, width: '300px' }}
-      />
-      <Button variant="contained" color="primary" onClick={handleAddProject}>
-        Add Project
-      </Button>
-    </Box>
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+        <TextField
+          label="Enter Project Name"
+          variant="outlined"
+          value={projectName}
+          onChange={(e) => setProjectName(e.target.value)}
+          sx={{ mb: 2, width: '300px' }}
+        />
+        <Button variant="contained" color="primary" onClick={handleAddProject}>
+          Add Project
+        </Button>
+      </Box>
     </Layout>
   );
 };

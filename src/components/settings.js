@@ -52,11 +52,11 @@ const Settings = () => {
       // ✅ Choose the correct endpoint based on role
       let url;
       if (role === 'Employee') {
-        url = `http://localhost:8080/api/employees/${userId}/change-password`;
+        url = `api/employees/${userId}/change-password`;
       } else if (role === 'manager') {
-        url = `http://localhost:8080/api/managers/${userId}/change-password`;
+        url = `api/managers/${userId}/change-password`;
       } else {
-        url = `http://localhost:8080/api/user/${userId}/change-password`;
+        url = `api/user/${userId}/change-password`;
       }
   
       const res = await axios.put(url, {

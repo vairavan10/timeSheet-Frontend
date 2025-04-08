@@ -13,7 +13,7 @@ const EmployeesListPage = () => {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/employees/list'); // Replace with actual API endpoint
+        const response = await axios.get('api/employees/list'); // Replace with actual API endpoint
         setEmployees(response.data.data);  // Ensure you're accessing the correct part of the response
       } catch (error) {
         setError('Error fetching employee data');
