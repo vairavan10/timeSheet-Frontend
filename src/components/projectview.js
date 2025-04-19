@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box,
-  Typography, FormControl, InputLabel, Select, MenuItem, Dialog, DialogTitle,
-  DialogContent, DialogActions
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+  Paper, Button, Box, Typography, FormControl, InputLabel, Select,
+  MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress
 } from '@mui/material';
 import { Link } from 'react-router-dom';
-import SideMenu from './sidebar';
 import Layout from './layout';
 
 const ProjectListPage = () => {
@@ -17,7 +16,6 @@ const ProjectListPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // For dialog
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
   const [selectedProject, setSelectedProject] = useState(null);
@@ -41,9 +39,8 @@ const ProjectListPage = () => {
 
         const dateRes = await axios.get('api/projectdetails/available-dates');
         setAvailableDates(dateRes.data?.dates ?? []);
-
         setReports(reportsData);
-      } catch (err) {
+      } catch {
         setError('❌ Error fetching data.');
       } finally {
         setLoading(false);
@@ -56,9 +53,7 @@ const ProjectListPage = () => {
   const handleDateChange = async (dateRangeString) => {
     setSelectedDate(dateRangeString);
 
-    if (dateRangeString === "Latest Report") {
-      setSelectedDate("");
-
+    if (dateRangeString === 'Latest Report') {
       const latestReports = {};
       for (const project of projects) {
         try {
@@ -79,8 +74,7 @@ const ProjectListPage = () => {
         const reportRes = await axios.get(
           `api/projectdetails/${project._id}/report-by-date?fromDate=${fromDate}&toDate=${toDate}`
         );
-        const reportData = reportRes.data;
-        updatedReports[project._id] = Array.isArray(reportData) ? reportData[0] : reportData;
+        updatedReports[project._id] = Array.isArray(reportRes.data) ? reportRes.data[0] : reportRes.data;
       } catch {
         updatedReports[project._id] = null;
       }
@@ -100,83 +94,91 @@ const ProjectListPage = () => {
     setSelectedProject(null);
   };
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>{error}</p>;
+  if (loading) {
+    return (
+      <Box sx={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <CircularProgress color="primary" />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ p: 4, textAlign: 'center', color: 'error.main' }}>
+        <Typography variant="h6">{error}</Typography>
+      </Box>
+    );
+  }
 
   return (
     <Layout>
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-      {/* <SideMenu /> */}
-      <Box sx={{ flex: 1, p: 4 }}>
-        <Typography variant="h4" sx={{ mb: 3, textAlign: 'center' }}>
-          📁 All Projects Overview
+      <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: '1200px', mx: 'auto' }}>
+        <Typography variant="h4" sx={{ mb: 4, fontWeight: 'bold', textAlign: 'center' }}>
+          📁 Project Reports Dashboard
         </Typography>
 
-        <FormControl fullWidth sx={{ mb: 3 }}>
-          <InputLabel>Select Date</InputLabel>
-          <Select
-            value={selectedDate || "Latest Report"}
-            label="Select Date"
-            onChange={(e) => handleDateChange(e.target.value)}
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 4 }}>
+          <FormControl fullWidth>
+            <InputLabel>Select Date</InputLabel>
+            <Select
+              value={selectedDate || 'Latest Report'}
+              label="Select Date"
+              onChange={(e) => handleDateChange(e.target.value)}
+            >
+              <MenuItem value="Latest Report">Latest Report</MenuItem>
+              {availableDates.length > 0 ? (
+                availableDates.map((dateRange, idx) => {
+                  const from = new Date(dateRange.fromDate).toLocaleDateString();
+                  const to = new Date(dateRange.toDate).toLocaleDateString();
+                  return (
+                    <MenuItem key={idx} value={`${dateRange.fromDate}|${dateRange.toDate}`}>
+                      {`${from} to ${to}`}
+                    </MenuItem>
+                  );
+                })
+              ) : (
+                <MenuItem disabled>No Dates Available</MenuItem>
+              )}
+            </Select>
+          </FormControl>
+
+          <Button
+            variant="contained"
+            component={Link}
+            to="/add-projects"
+            sx={{ whiteSpace: 'nowrap', height: '56px' }}
           >
-            <MenuItem value="Latest Report">Latest Report</MenuItem>
-            {availableDates.length > 0 ? (
-              availableDates.map((dateRange, idx) => {
-                const from = new Date(dateRange.fromDate).toLocaleDateString();
-                const to = new Date(dateRange.toDate).toLocaleDateString();
-                const value = `${dateRange.fromDate}|${dateRange.toDate}`;
-                return (
-                  <MenuItem key={idx} value={value}>
-                    {`${from} to ${to}`}
-                  </MenuItem>
-                );
-              })
-            ) : (
-              <MenuItem value="" disabled>No Dates Available</MenuItem>
-            )}
-          </Select>
-        </FormControl>
+            ➕ Add Project
+          </Button>
+        </Box>
 
-        <Button
-          variant="contained"
-          color="primary"
-          component={Link}
-          to="/add-projects"
-          sx={{ mb: 3 }}
-        >
-          ➕ Add Project
-        </Button>
-
-        <TableContainer component={Paper}>
+        <TableContainer component={Paper} elevation={4} sx={{ borderRadius: 2 }}>
           <Table>
             <TableHead>
-              <TableRow>
+              <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
                 <TableCell><strong>Project Name</strong></TableCell>
                 <TableCell><strong>Dependencies</strong></TableCell>
                 <TableCell><strong>Utilization</strong></TableCell>
                 <TableCell><strong>Hours Spent</strong></TableCell>
                 <TableCell><strong>Status</strong></TableCell>
-
                 <TableCell align="center"><strong>Actions</strong></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {projects.map((project) => {
                 const report = reports[project._id];
-
                 return (
-                  <TableRow key={project._id}>
+                  <TableRow hover key={project._id}>
                     <TableCell>{project.name}</TableCell>
                     <TableCell>{report?.dependencies ?? 'N/A'}</TableCell>
                     <TableCell>{report?.utilization ? `${report.utilization}%` : 'N/A'}</TableCell>
                     <TableCell>{report?.hoursSpent ?? 'N/A'}</TableCell>
                     <TableCell>{report?.status ?? 'N/A'}</TableCell>
-
                     <TableCell align="center">
                       <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                         <Button
                           variant="contained"
-                          color="primary"
+                          size="small"
                           component={Link}
                           to={`/project/${project._id}`}
                         >
@@ -185,6 +187,7 @@ const ProjectListPage = () => {
                         {report && (
                           <Button
                             variant="outlined"
+                            size="small"
                             color="secondary"
                             onClick={() => handleOpenDialog(project, report)}
                           >
@@ -200,33 +203,26 @@ const ProjectListPage = () => {
           </Table>
         </TableContainer>
 
-        {/* Dialog for viewing report */}
+        {/* View Report Dialog */}
         <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="sm">
-          <DialogTitle>📄 Report Details</DialogTitle>
-          <DialogContent dividers>
-            <Typography><strong>Project:</strong> {selectedProject?.name}</Typography>
-            <Typography><strong>Dependencies:</strong> {selectedReport?.dependencies ?? 'N/A'}</Typography>
-            <Typography><strong>Utilization:</strong> {selectedReport?.utilization ? `${selectedReport.utilization}%` : 'N/A'}</Typography>
-            <Typography><strong>Hours Spent:</strong> {selectedReport?.hoursSpent ?? 'N/A'}</Typography>
-            <Typography><strong>Status:</strong> {selectedReport?.status ?? 'N/A'}</Typography>
-
+          <DialogTitle>📄 Report Summary</DialogTitle>
+          <DialogContent dividers sx={{ typography: 'body1' }}>
+            <Typography gutterBottom><strong>Project:</strong> {selectedProject?.name}</Typography>
+            <Typography gutterBottom><strong>Dependencies:</strong> {selectedReport?.dependencies ?? 'N/A'}</Typography>
+            <Typography gutterBottom><strong>Utilization:</strong> {selectedReport?.utilization ?? 'N/A'}%</Typography>
+            <Typography gutterBottom><strong>Hours Spent:</strong> {selectedReport?.hoursSpent ?? 'N/A'}</Typography>
+            <Typography gutterBottom><strong>Status:</strong> {selectedReport?.status ?? 'N/A'}</Typography>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseDialog} color="primary">Close</Button>
+            <Button onClick={handleCloseDialog} color="primary" variant="contained">Close</Button>
           </DialogActions>
         </Dialog>
-
       </Box>
-    </Box>
     </Layout>
   );
 };
 
 export default ProjectListPage;
-
-
-
-
 
 // import React, { useEffect, useState } from 'react';
 // import axios from 'axios';

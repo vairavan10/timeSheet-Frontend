@@ -3,21 +3,21 @@ import {
   Button,
   Box,
   Typography,
-  Card,
-  CardContent,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
   Alert,
+  useTheme,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from './sidebar';
+import { Lock, Logout } from '@mui/icons-material';
 import axios from 'axios';
 import Layout from './layout';
 
 const Settings = () => {
+  const theme = useTheme();
   const navigate = useNavigate();
   const [openDialog, setOpenDialog] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -45,11 +45,10 @@ const Settings = () => {
 
   const handleChangePassword = async () => {
     try {
-      const user = JSON.parse(localStorage.getItem('user')); // ✅ Parse it
+      const user = JSON.parse(localStorage.getItem('user'));
       const userId = user?.id;
       const role = user?.role;
-  
-      // ✅ Choose the correct endpoint based on role
+
       let url;
       if (role === 'Employee') {
         url = `api/employees/${userId}/change-password`;
@@ -58,79 +57,63 @@ const Settings = () => {
       } else {
         url = `api/user/${userId}/change-password`;
       }
-  
-      const res = await axios.put(url, {
-        currentPassword,
-        newPassword,
-      });
-  
+
+      const res = await axios.put(url, { currentPassword, newPassword });
+
       if (res.status === 200) {
         setResponseMessage('✅ Password changed successfully.');
         setError('');
-        setCurrentPassword('');
-        setNewPassword('');
         setTimeout(() => handleCloseDialog(), 1500);
       }
     } catch (err) {
       const backendMessage = err?.response?.data?.message || 'Something went wrong';
-      setResponseMessage('');
       setError(`❌ ${backendMessage}`);
+      setResponseMessage('');
     }
   };
-  
+
   return (
     <Layout>
-    <Box sx={{ display: 'flex' }}>
-      {/* <Sidebar /> */}
       <Box
         sx={{
-          flex: 1,
           p: 4,
-          backgroundColor: '#f9f9f9',
+          minHeight: '100vh',
+          backgroundColor: theme.palette.mode === 'dark' ? '#121212' : '#f0f4f8',
+          color: theme.palette.text.primary,
           display: 'flex',
-          justifyContent: 'center',
+          flexDirection: 'column',
           alignItems: 'center',
-          height: '100vh',
+          justifyContent: 'center',
+          gap: 4,
         }}
       >
-        <Box sx={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-          {/* Change Password Card */}
-          <Card sx={{ width: 250 }}>
-            <CardContent>
-              <Typography variant="h6" align="center" gutterBottom>
-                Change Password
-              </Typography>
-              <Button
-                fullWidth
-                variant="contained"
-                color="primary"
-                onClick={handleOpenDialog}
-              >
-                Change
-              </Button>
-            </CardContent>
-          </Card>
+        <Typography variant="h4" fontWeight="bold">
+          Settings
+        </Typography>
 
-          {/* Logout Card */}
-          <Card sx={{ width: 250 }}>
-            <CardContent>
-              <Typography variant="h6" align="center" gutterBottom>
-                Logout
-              </Typography>
-              <Button
-                fullWidth
-                variant="contained"
-                color="error"
-                onClick={handleLogout}
-              >
-                Logout
-              </Button>
-            </CardContent>
-          </Card>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: 300 }}>
+          <Button
+            startIcon={<Lock />}
+            fullWidth
+            variant="outlined"
+            onClick={handleOpenDialog}
+          >
+            Change Password
+          </Button>
+
+          <Button
+            startIcon={<Logout />}
+            fullWidth
+            variant="outlined"
+            color="error"
+            onClick={handleLogout}
+          >
+            Logout
+          </Button>
         </Box>
 
-        {/* Change Password Popup */}
-        <Dialog open={openDialog} onClose={handleCloseDialog}>
+        {/* Change Password Dialog */}
+        <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="sm">
           <DialogTitle>Change Password</DialogTitle>
           <DialogContent>
             <TextField
@@ -149,8 +132,16 @@ const Settings = () => {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
             />
-            {responseMessage && <Alert severity="success" sx={{ mt: 2 }}>{responseMessage}</Alert>}
-            {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+            {responseMessage && (
+              <Alert severity="success" sx={{ mt: 2 }}>
+                {responseMessage}
+              </Alert>
+            )}
+            {error && (
+              <Alert severity="error" sx={{ mt: 2 }}>
+                {error}
+              </Alert>
+            )}
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseDialog}>Cancel</Button>
@@ -160,7 +151,6 @@ const Settings = () => {
           </DialogActions>
         </Dialog>
       </Box>
-    </Box>
     </Layout>
   );
 };

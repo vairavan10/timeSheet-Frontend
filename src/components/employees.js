@@ -12,16 +12,15 @@ import {
   InputLabel,
   Select,
   Chip,
+  useTheme,
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AccountCircle, Email, Phone } from "@mui/icons-material";
-import SideMenu from "./sidebar";
+import Layout from "./layout";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import Layout from "./layout";
-
 
 const skillsList = ["React", "Node.js", "Python", "Java", "AWS", "UI/UX"];
 
@@ -38,6 +37,9 @@ const Employee = () => {
     certification: null,
   });
 
+  const theme = useTheme();
+  const navigate = useNavigate();
+
   const handleChange = (e) => {
     setEmployee({ ...employee, [e.target.name]: e.target.value });
   };
@@ -49,27 +51,19 @@ const Employee = () => {
   const handleFileUpload = (event) => {
     setEmployee({ ...employee, certification: event.target.files[0] });
   };
-  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
     const employeeData = {
-      name: employee.name,
-      email: employee.email,
-      phone: employee.phone,
-      role: employee.role,
-      designation: employee.designation,
-      joiningDate: employee.joiningDate,
-      experience: employee.experience,
-      skills: employee.skills,
+      ...employee,
+      certification: undefined,
     };
-  
+
     try {
       const response = await axios.post("api/employees/addemployee", employeeData, {
         headers: { "Content-Type": "application/json" },
       });
-  
+
       if (response.status === 201) {
         alert("Employee profile created successfully!");
         setEmployee({
@@ -81,6 +75,7 @@ const Employee = () => {
           joiningDate: null,
           experience: "",
           skills: [],
+          certification: null,
         });
         navigate("/dashboard");
       } else {
@@ -91,32 +86,71 @@ const Employee = () => {
       alert("Error submitting employee profile. Please try again later.");
     }
   };
-  
 
   return (
-    
     <Layout>
-      {/* <SideMenu /> */}
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh" bgcolor="#f4f6f8" p={2}>
-        <Paper elevation={3} sx={{ p: 4, width: "600px", borderRadius: "12px" }}>
-          <Typography variant="h5" gutterBottom align="center" fontWeight="bold">
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh" bgcolor="background.default" p={2}>
+        <Paper
+          elevation={4}
+          sx={{
+            p: 4,
+            width: "600px",
+            borderRadius: "16px",
+            backgroundColor: theme.palette.mode === "dark" ? "#1e1e1e" : "#ffffff",
+            boxShadow: theme.palette.mode === "dark" ? "0px 4px 20px rgba(255,255,255,0.1)" : undefined,
+          }}
+        >
+          <Typography variant="h5" align="center" fontWeight="bold" gutterBottom>
             Create Employee Profile
           </Typography>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <Grid container spacing={2}>
               <Grid item xs={12}>
-                <TextField fullWidth label="Name" name="name" value={employee.name} onChange={handleChange} 
-                  InputProps={{ startAdornment: <InputAdornment position="start"><AccountCircle /></InputAdornment> }}
+                <TextField
+                  fullWidth
+                  label="Name"
+                  name="name"
+                  value={employee.name}
+                  onChange={handleChange}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <AccountCircle />
+                      </InputAdornment>
+                    ),
+                  }}
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField fullWidth label="Email" name="email" value={employee.email} onChange={handleChange} 
-                  InputProps={{ startAdornment: <InputAdornment position="start"><Email /></InputAdornment> }}
+                <TextField
+                  fullWidth
+                  label="Email"
+                  name="email"
+                  value={employee.email}
+                  onChange={handleChange}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Email />
+                      </InputAdornment>
+                    ),
+                  }}
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField fullWidth label="Phone" name="phone" value={employee.phone} onChange={handleChange} 
-                  InputProps={{ startAdornment: <InputAdornment position="start"><Phone /></InputAdornment> }}
+                <TextField
+                  fullWidth
+                  label="Phone"
+                  name="phone"
+                  value={employee.phone}
+                  onChange={handleChange}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Phone />
+                      </InputAdornment>
+                    ),
+                  }}
                 />
               </Grid>
               <Grid item xs={6}>
@@ -134,38 +168,50 @@ const Employee = () => {
                 />
               </Grid>
               <Grid item xs={6}>
-                <TextField fullWidth label="Experience (in years)" name="experience" value={employee.experience} onChange={handleChange} />
+                <TextField
+                  fullWidth
+                  label="Experience (in years)"
+                  name="experience"
+                  value={employee.experience}
+                  onChange={handleChange}
+                />
               </Grid>
               <Grid item xs={12}>
-  <FormControl fullWidth sx={{ minWidth: 120 }} variant="outlined">
-    <InputLabel id="skill-set-label">Skill Set</InputLabel>
-    <Select
-      labelId="skill-set-label"
-      multiple
-      name="skills"
-      value={employee.skills}
-      onChange={handleSkillChange}
-      label="Skill Set"
-      renderValue={(selected) => (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-          {selected.map((value) => (
-            <Chip key={value} label={value} />
-          ))}
-        </Box>
-      )}
-    >
-      {skillsList.map((skill) => (
-        <MenuItem key={skill} value={skill}>
-          {skill}
-        </MenuItem>
-      ))}
-    </Select>
-  </FormControl>
-</Grid>
-
+                <FormControl fullWidth>
+                  <InputLabel id="skill-set-label">Skill Set</InputLabel>
+                  <Select
+                    labelId="skill-set-label"
+                    multiple
+                    name="skills"
+                    value={employee.skills}
+                    onChange={handleSkillChange}
+                    label="Skill Set"
+                    renderValue={(selected) => (
+                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                        {selected.map((value) => (
+                          <Chip key={value} label={value} color="primary" />
+                        ))}
+                      </Box>
+                    )}
+                  >
+                    {skillsList.map((skill) => (
+                      <MenuItem key={skill} value={skill}>
+                        {skill}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
               <Grid item xs={12}>
-                <input type="file" accept=".pdf,.jpg,.png" onChange={handleFileUpload} />
-                {employee.certification && <Typography variant="body2">Selected: {employee.certification.name}</Typography>}
+                <Button variant="outlined" component="label" fullWidth>
+                  Upload Certification
+                  <input type="file" accept=".pdf,.jpg,.png" hidden onChange={handleFileUpload} />
+                </Button>
+                {employee.certification && (
+                  <Typography variant="body2" mt={1}>
+                    Selected: {employee.certification.name}
+                  </Typography>
+                )}
               </Grid>
               <Grid item xs={12}>
                 <Button variant="contained" color="primary" fullWidth onClick={handleSubmit}>
@@ -176,7 +222,8 @@ const Employee = () => {
           </LocalizationProvider>
         </Paper>
       </Box>
-      </Layout>  );
+    </Layout>
+  );
 };
 
 export default Employee;
