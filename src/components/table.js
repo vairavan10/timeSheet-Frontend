@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "./sidebar";
-import Layout from "./layout";
+import { Modal } from "@mui/material";
+import Layout from './layout'
+
 import {
   Table,
   TableHead,
@@ -31,6 +33,9 @@ const EnteredDataPage = () => {
   const [totalRecords, setTotalRecords] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
   const [activeFilter, setActiveFilter] = useState("");
+  const [selectedWorkDone, setSelectedWorkDone] = useState("");
+const [openModal, setOpenModal] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -93,49 +98,65 @@ const EnteredDataPage = () => {
     setFilters((prevFilters) => ({ ...prevFilters, [activeFilter]: value }));
     setAnchorEl(null);
   };
-
+  const handleWorkDoneClick = (text) => {
+    setSelectedWorkDone(text);
+    setOpenModal(true);
+  };
+  
   const handleFilterValues = () => {
     const filterValues = [];
   
     timesheetList.forEach((entry) => {
       if (activeFilter === "description") {
-        // Filter by 'Leave' type
-        if (entry.typeOfWork === "Leave") filterValues.push("Leave");
+        if (entry.typeOfWork === "Leave") {
+          filterValues.push({ label: "Leave", value: "Leave" });
   
-        // Filter by 'Extra Activity' type
-        if (entry.typeOfWork === "Extra Activity") filterValues.push("Extra Activity");
-  
-        // Filter by 'Regular Work' type
-        if (entry.typeOfWork === "Regular Work") filterValues.push("Regular Work");
-  
-        // Filter by 'project' (only for 'Regular Work')
-        if (entry.typeOfWork === "Regular Work" && entry.project && entry.project.name) {
-          filterValues.push(entry.project.name);
+          if (entry.leaveType) {
+            filterValues.push({ label: entry.leaveType, value: entry.leaveType });
+          }
         }
   
-        // Filter by 'leave' (only for 'Leave' type)
-        if (entry.typeOfWork === "Leave" && entry.leaveType) {
-          filterValues.push(entry.leaveType); // Half Day or Full Day
+        if (entry.typeOfWork === "Extra Activity") {
+          filterValues.push({ label: "Extra Activity", value: "Extra Activity" });
+  
+          if (entry.extraActivity) {
+            filterValues.push({ label: entry.extraActivity, value: entry.extraActivity });
+          }
         }
   
-        // Filter by 'extraActivity' (only for 'Extra Activity' type)
-        if (entry.typeOfWork === "Extra Activity" && entry.extraActivity) {
-          filterValues.push(entry.extraActivity);
+        if (entry.typeOfWork === "Regular Work") {
+          filterValues.push({ label: "Regular Work", value: "Regular Work" });
+        
+          if (entry.project && entry.project.name) {
+            filterValues.push({ label: entry.project.name, value: entry.project.name });
+          }
         }
+        
       }
   
-      // For other filters like 'name', 'workDone', etc. (if needed)
       if (activeFilter === "name" && entry.name) {
-        filterValues.push(entry.name);
+        filterValues.push({ label: entry.name, value: entry.name });
       }
   
-      if (activeFilter === "workDone" && entry.workDone) {
-        filterValues.push(entry.workDone);
+      if (activeFilter === "workDone" && entry.typeOfWork === "Regular Work" && entry.workDone) {
+        filterValues.push({
+          label: entry.workDone.length > 30 ? entry.workDone.substring(0, 30) + "..." : entry.workDone,
+          value: entry.workDone, // full value for actual filtering
+        });
+      }
+      
+      
+    });
+  
+    // Filter out duplicates based on value
+    const uniqueMap = new Map();
+    filterValues.forEach(item => {
+      if (!uniqueMap.has(item.value)) {
+        uniqueMap.set(item.value, item);
       }
     });
   
-    // Return unique filter values to avoid duplicates
-    return [...new Set(filterValues)];
+    return Array.from(uniqueMap.values());
   };
   
 
@@ -162,24 +183,28 @@ const EnteredDataPage = () => {
   return (
     <Layout>
     <Container maxWidth="lg" sx={{ mt: 5 }}>
-      {/* <Sidebar/> */}
       <Typography variant="h4" align="center" gutterBottom>
-        Entered Timesheet Data
+        Employee Timesheet View
       </Typography>
 
       <Box sx={{ display: "flex", gap: 1, mb: 3, flexWrap: "wrap" }}>
-        {Object.entries(filters).map(
-          ([key, value]) =>
-            value && (
-              <Chip
-                key={key}
-                label={`${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`}
-                onDelete={() => setFilters({ ...filters, [key]: "" })}
-                color="primary"
-              />
-            )
-        )}
-      </Box>
+  {Object.entries(filters).map(([key, value]) => {
+    if (!value) return null;
+
+    const displayValue = value.length > 30 ? value.substring(0, 30) + "..." : value;
+
+    return (
+      <Chip
+        key={key}
+        label={`${key.charAt(0).toUpperCase() + key.slice(1)}: ${displayValue}`}
+        onDelete={() => setFilters({ ...filters, [key]: "" })}
+        color="primary"
+        title={`${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`} // Tooltip for full value
+      />
+    );
+  })}
+</Box>
+
 
       <Button
         variant="outlined"
@@ -191,9 +216,17 @@ const EnteredDataPage = () => {
         Clear All Filters
       </Button>
 
-      <TableContainer component={Paper} sx={{ mt: 3 }}>
-        <Table>
-          <TableHead>
+      <TableContainer
+  component={Paper}
+  sx={{
+    mt: 3,
+    boxShadow: 3,
+    borderRadius: 2,
+    overflowX: "hidden",
+  }}
+>
+      <Table sx={{ minWidth: 650 }} stickyHeader>
+      <TableHead>
             <TableRow>
               <TableCell><strong>Date</strong></TableCell>
               <TableCell>
@@ -220,7 +253,19 @@ const EnteredDataPage = () => {
           <TableBody>
             {filteredTimesheetList.length > 0 ? (
               filteredTimesheetList.map((entry) => (
-                <TableRow key={entry._id}>
+<TableRow
+  key={entry._id}
+  hover
+  sx={{
+    transition: 'transform 0.2s ease-in-out',
+    '&:hover': {
+      backgroundColor: '#f5f5f5',
+      transform: 'scale(1.01)',
+      cursor: 'pointer',
+    },
+  }}
+  
+>
                   <TableCell>{entry.date ? new Date(entry.date).toLocaleDateString() : "--"}</TableCell>
                   <TableCell>{entry.name || "--"}</TableCell>
                   <TableCell>
@@ -232,7 +277,13 @@ const EnteredDataPage = () => {
                       ? entry.project?.name || "Project"
                       : entry.workDone || "--"}
                   </TableCell>
-                  <TableCell>{entry.workDone || "--"}</TableCell>
+                  <TableCell
+  onClick={() => handleWorkDoneClick(entry.workDone)}
+  sx={{ cursor: 'pointer', maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+>
+  {entry.workDone || "--"}
+</TableCell>
+
                   <TableCell>{entry.hours || "--"}</TableCell>
                 </TableRow>
               ))
@@ -246,6 +297,30 @@ const EnteredDataPage = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      <Modal open={openModal} onClose={() => setOpenModal(false)}>
+  <Box
+    sx={{
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      bgcolor: "background.paper",
+      boxShadow: 24,
+      p: 4,
+      borderRadius: 2,
+      maxWidth: 500,
+      wordBreak: "break-word",
+    }}
+  >
+    <Typography variant="h6" gutterBottom>
+      Full Work Done Description
+    </Typography>
+    <Typography variant="body1">{selectedWorkDone}</Typography>
+    <Button onClick={() => setOpenModal(false)} sx={{ mt: 2 }}>
+      Close
+    </Button>
+  </Box>
+</Modal>
 
       <TablePagination
         component="div"
@@ -257,13 +332,22 @@ const EnteredDataPage = () => {
         rowsPerPageOptions={[5, 10, 15, 20]}
       />
 
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
-        {handleFilterValues().map((value, index) => (
-          <MenuItem key={index} onClick={() => handleFilterSelect(value)}>
-            {value}
-          </MenuItem>
-        ))}
-      </Menu>
+<Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+  {handleFilterValues().length > 0 ? (
+    handleFilterValues().map(({ label, value }, index) => (
+      <MenuItem
+        key={index}
+        onClick={() => handleFilterSelect(value)}
+        sx={{ fontSize: 14 }}
+      >
+        {label}
+      </MenuItem>
+    ))
+  ) : (
+    <MenuItem disabled>No filter options</MenuItem>
+  )}
+</Menu>
+
     </Container>
     </Layout>
   );

@@ -12,20 +12,25 @@ import {
   InputLabel,
   Select,
   Chip,
+  Stack,
+  IconButton ,
 } from "@mui/material";
+import AddIcon from '@mui/icons-material/Add';
+
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AccountCircle, Email, Phone } from "@mui/icons-material";
-import SideMenu from "./sidebar";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import Layout from "./layout";
 
-
-const skillsList = ["React", "Node.js", "Python", "Java", "AWS", "UI/UX"];
+// const skillsList = ["React", "Node.js", "Python", "Java", "AWS", "UI/UX"];
 
 const Employee = () => {
+  const [newSkill, setNewSkill] = useState("");
   const [employee, setEmployee] = useState({
     name: "",
     email: "",
@@ -38,6 +43,8 @@ const Employee = () => {
     certification: null,
   });
 
+
+  
   const handleChange = (e) => {
     setEmployee({ ...employee, [e.target.name]: e.target.value });
   };
@@ -49,21 +56,28 @@ const Employee = () => {
   const handleFileUpload = (event) => {
     setEmployee({ ...employee, certification: event.target.files[0] });
   };
+
   const navigate = useNavigate();
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "error", // can be "success", "warning", "info", or "error"
+  });
+  
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+  
+  const showSnackbar = (message, severity = "error") => {
+    setSnackbar({ open: true, message, severity });
+  };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
   
-    const employeeData = {
-      name: employee.name,
-      email: employee.email,
-      phone: employee.phone,
-      role: employee.role,
-      designation: employee.designation,
-      joiningDate: employee.joiningDate,
-      experience: employee.experience,
-      skills: employee.skills,
-    };
+    const employeeData = { ...employee };
+    delete employeeData.certification;
   
     try {
       const response = await axios.post("api/employees/addemployee", employeeData, {
@@ -71,7 +85,7 @@ const Employee = () => {
       });
   
       if (response.status === 201) {
-        alert("Employee profile created successfully!");
+        showSnackbar("Employee profile created successfully!", "success");
         setEmployee({
           name: "",
           email: "",
@@ -81,94 +95,204 @@ const Employee = () => {
           joiningDate: null,
           experience: "",
           skills: [],
+          certification: null,
         });
-        navigate("/dashboard");
+        setTimeout(() => navigate("/dashboard"), 1000); // Navigate after short delay
       } else {
-        alert("Something went wrong! Please try again.");
+        showSnackbar("Something went wrong! Please try again.");
       }
     } catch (error) {
       console.error("Error submitting employee profile:", error);
-      alert("Error submitting employee profile. Please try again later.");
+      showSnackbar("Error submitting employee profile. Please try again later.");
     }
   };
   
 
   return (
-    
     <Layout>
-      {/* <SideMenu /> */}
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh" bgcolor="#f4f6f8" p={2}>
-        <Paper elevation={3} sx={{ p: 4, width: "600px", borderRadius: "12px" }}>
-          <Typography variant="h5" gutterBottom align="center" fontWeight="bold">
-            Create Employee Profile
+      
+  <Box
+    sx={{
+      minHeight: "100vh",
+      width: "100%",
+      // bgcolor: "#e9edf0",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      px: 2,
+      py: 4,
+    }}
+  >
+
+        <Paper elevation={6} sx={{ p: 5, borderRadius: 4, maxWidth: 750, width: "100%" }}>
+          <Typography variant="h4" align="center" fontWeight="bold" mb={4}>
+            Employee Profile Form
           </Typography>
+
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <TextField fullWidth label="Name" name="name" value={employee.name} onChange={handleChange} 
-                  InputProps={{ startAdornment: <InputAdornment position="start"><AccountCircle /></InputAdornment> }}
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Name"
+                  name="name"
+                  value={employee.name}
+                  onChange={handleChange}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <AccountCircle />
+                      </InputAdornment>
+                    ),
+                  }}
                 />
               </Grid>
-              <Grid item xs={12}>
-                <TextField fullWidth label="Email" name="email" value={employee.email} onChange={handleChange} 
-                  InputProps={{ startAdornment: <InputAdornment position="start"><Email /></InputAdornment> }}
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Email"
+                  name="email"
+                  value={employee.email}
+                  onChange={handleChange}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Email />
+                      </InputAdornment>
+                    ),
+                  }}
                 />
               </Grid>
-              <Grid item xs={12}>
-                <TextField fullWidth label="Phone" name="phone" value={employee.phone} onChange={handleChange} 
-                  InputProps={{ startAdornment: <InputAdornment position="start"><Phone /></InputAdornment> }}
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Phone"
+                  name="phone"
+                  value={employee.phone}
+                  onChange={handleChange}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Phone />
+                      </InputAdornment>
+                    ),
+                  }}
                 />
               </Grid>
-              <Grid item xs={6}>
-                <TextField fullWidth label="Role" name="role" value={employee.role} onChange={handleChange} />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField fullWidth label="Designation" name="designation" value={employee.designation} onChange={handleChange} />
-              </Grid>
-              <Grid item xs={6}>
-                <DatePicker
-                  label="Joining Date"
-                  value={employee.joiningDate}
-                  onChange={(date) => setEmployee({ ...employee, joiningDate: date })}
-                  renderInput={(params) => <TextField {...params} fullWidth />}
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Role"
+                  name="role"
+                  value={employee.role}
+                  onChange={handleChange}
                 />
               </Grid>
-              <Grid item xs={6}>
-                <TextField fullWidth label="Experience (in years)" name="experience" value={employee.experience} onChange={handleChange} />
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Designation"
+                  name="designation"
+                  value={employee.designation}
+                  onChange={handleChange}
+                />
               </Grid>
-              <Grid item xs={12}>
-  <FormControl fullWidth sx={{ minWidth: 120 }} variant="outlined">
-    <InputLabel id="skill-set-label">Skill Set</InputLabel>
-    <Select
-      labelId="skill-set-label"
-      multiple
-      name="skills"
-      value={employee.skills}
-      onChange={handleSkillChange}
-      label="Skill Set"
-      renderValue={(selected) => (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-          {selected.map((value) => (
-            <Chip key={value} label={value} />
-          ))}
-        </Box>
-      )}
-    >
-      {skillsList.map((skill) => (
-        <MenuItem key={skill} value={skill}>
-          {skill}
-        </MenuItem>
-      ))}
-    </Select>
-  </FormControl>
+
+              <Grid item xs={12} sm={6}>
+  <DatePicker
+    label="Joining Date"
+    value={employee.joiningDate}
+    onChange={(date) => setEmployee({ ...employee, joiningDate: date })}
+    format="DD/MM/YYYY"
+    renderInput={(params) => <TextField fullWidth {...params} />}
+  />
 </Grid>
 
-              <Grid item xs={12}>
-                <input type="file" accept=".pdf,.jpg,.png" onChange={handleFileUpload} />
-                {employee.certification && <Typography variant="body2">Selected: {employee.certification.name}</Typography>}
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Experience (in years)"
+                  name="experience"
+                  value={employee.experience}
+                  onChange={handleChange}
+                />
               </Grid>
+
               <Grid item xs={12}>
-                <Button variant="contained" color="primary" fullWidth onClick={handleSubmit}>
+  <FormControl fullWidth>
+    
+    <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+      <TextField
+        id="skills-input"
+        placeholder="Type a skill"
+        label="Skill Set"
+        value={newSkill}
+        onChange={(e) => setNewSkill(e.target.value)}
+        fullWidth
+      />
+      <IconButton
+        onClick={() => {
+          if (newSkill.trim() && !employee.skills.includes(newSkill.trim())) {
+            setEmployee({ ...employee, skills: [...employee.skills, newSkill.trim()] });
+            setNewSkill("");
+          }
+        }}
+        color="primary"
+        sx={{ border: '1px solid #ccc', borderRadius: 1 }}
+      >
+        <AddIcon />
+      </IconButton>
+    </Box>
+
+    <Stack direction="row" spacing={1} flexWrap="wrap">
+      {employee.skills.map((skill, index) => (
+        <Chip
+          key={index}
+          label={skill}
+          onDelete={() => {
+            const updatedSkills = employee.skills.filter((s) => s !== skill);
+            setEmployee({ ...employee, skills: updatedSkills });
+          }}
+          color="primary"
+        />
+      ))}
+    </Stack>
+  </FormControl>
+</Grid>
+{/* 
+              <Grid item xs={12}>
+                <Button component="label" variant="outlined" fullWidth>
+                  Upload Certification
+                  <input type="file" hidden onChange={handleFileUpload} accept=".pdf,.jpg,.png" />
+                </Button>
+                {employee.certification && (
+                  <Typography variant="body2" mt={1} color="text.secondary">
+                    Selected: {employee.certification.name}
+                  </Typography>
+                )}
+              </Grid> */}
+
+              <Grid item xs={12}>
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={handleSubmit}
+                  sx={{
+                    background: "linear-gradient(90deg,rgb(137, 30, 238) 0%, #42a5f5 100%)",
+                    color: "#fff",
+                    fontWeight: "bold",
+                    py: 1.5,
+                    borderRadius: 2,
+                    '&:hover': {
+                      background: "linear-gradient(90deg, #1565c0 0%, #1e88e5 100%)",
+                    }
+                  }}
+                >
                   Create Profile
                 </Button>
               </Grid>
@@ -176,7 +300,19 @@ const Employee = () => {
           </LocalizationProvider>
         </Paper>
       </Box>
-      </Layout>  );
+      <Snackbar
+  anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+  open={snackbar.open}
+  autoHideDuration={4000}
+  onClose={handleCloseSnackbar}
+>
+  <MuiAlert onClose={handleCloseSnackbar} severity={snackbar.severity} elevation={6} variant="filled">
+    {snackbar.message}
+  </MuiAlert>
+</Snackbar>
+
+    </Layout>
+  );
 };
 
 export default Employee;

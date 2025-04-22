@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import SideMenu from "./sidebar"; // or wherever your SideMenu is
 import { Box } from "@mui/material";
 
-const drawerWidth = 100;
+const drawerWidth = 10;
 const collapsedDrawerWidth = 70;
 
 const Layout = ({ children }) => {

@@ -83,10 +83,10 @@ const LoginPage = () => {
             <button type="submit" className="login-button">Login</button>
           </form>
 
-          <p className="create-account">
+          {/* <p className="create-account">
             Don’t have an account?{' '}
             <span onClick={() => navigate('/register')}>Create New User</span>
-          </p>
+          </p> */}
         </div>
       </div>
 

@@ -69,7 +69,7 @@ const ProjectDisplayPage = () => {
 
   // Handle adding details
   const handleAddDetails = async () => {
-    if (!fromDate || !toDate || !dependencies.trim() || !status.trim()) {
+    if (!fromDate || !toDate || !dependencies.trim() || !status) {
       alert("Please fill all fields before submitting.");
       return;
     }
@@ -169,14 +169,17 @@ const ProjectDisplayPage = () => {
 />
             </Grid>
             <Grid item xs={12}>
-              <TextField 
-                label="Status" 
-                variant="outlined" 
-                fullWidth 
-                value={status} 
-                onChange={(e) => setStatus(e.target.value)} 
-              />
-            </Grid>
+  <TextField
+    label="Status"
+    variant="outlined"
+    fullWidth
+    value={status}
+    onChange={(e) => setStatus(e.target.value)}
+    multiline
+    rows={4}  // You can adjust this to make the input larger
+  />
+</Grid>
+
             <Grid item xs={12} sx={{ textAlign: 'center' }}>
               <Button variant="contained" color="primary" onClick={handleAddDetails}>
                 Add Details
