@@ -10,6 +10,7 @@ import {
   useTheme,
 } from '@mui/material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { motion } from 'framer-motion';
 
 import LogoLight from '../asset/kologos.png';
 import LogoDark from '../asset/kologowhite.png';
@@ -130,7 +131,6 @@ const Dashboard = () => {
   
     loadData();
   }, [userData?.email]);
-  
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
@@ -142,63 +142,86 @@ const Dashboard = () => {
 
   return (
     <Layout>
-      <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-        <Box
-          component="main"
-          sx={{
-            flexGrow: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'auto',
-            backgroundColor: 'background.default',
-          }}
-        >
-<Box sx={{ height: 24 }} />          <Box sx={{ px: 3, pb: 3 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
-              <img src={logo} alt="Logo" style={{ maxHeight: '80px', objectFit: 'contain' }} />
-            </Box>
+      <Box
+  sx={{
+    display: 'flex',
+    height: '100vh',
+    overflow: 'auto',
+    backgroundColor: 'background.default', // already here ✅
+    backgroundImage: 'none',  // ⬅️ THIS LINE TO REMOVE LOGIN BACKGROUND
+    backgroundSize: 'cover',
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'center center',
+  }}
+>
 
-            <Box textAlign="center" mb={4}>
-              <Typography variant="h4" gutterBottom>
-                Welcome Back, {userName}! 👋
-              </Typography>
+        <Box component="main" sx={{ flexGrow: 1, p: { xs: 2, md: 4 }, display: 'flex', flexDirection: 'column' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+            <motion.img 
+              src={logo} 
+              alt="Logo" 
+              style={{ maxHeight: '80px', objectFit: 'contain' }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1 }}
+            />
+          </Box>
+
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.5 }}>
+            <Box textAlign="center" mb={5}>
+            <Typography variant="h4" gutterBottom display="flex" alignItems="center" justifyContent="center">
+  Welcome Back, {userName}!{' '}
+  <motion.span
+    initial={{ rotate: 0 }}
+    animate={{ rotate: [0, 20, -10, 20, -10, 0] }}
+    transition={{ duration: 1.5 }}
+    style={{ display: 'inline-block', marginLeft: 8 }}
+  >
+    👋
+  </motion.span>
+</Typography>
+
               <Typography variant="subtitle1" color="text.secondary">
                 Here's a quick overview of your timesheet stats.
               </Typography>
             </Box>
+          </motion.div>
 
-            <DragDropContext onDragEnd={handleDragEnd}>
-              <Droppable droppableId="stats" direction="horizontal">
-                {(provided) => (
-                  <Grid
-                    container
-                    spacing={3}
-                    justifyContent="center"
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                  >
-                    {statItems.map((item, index) => {
-                      if (item.adminOnly && !isManagerOrAdmin) return null;
-                      return (
-                        <Draggable draggableId={item.id} index={index} key={item.id}>
-                          {(provided) => (
-                            <Grid
-                              item xs={12} sm={6} md={3}
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="stats" direction="horizontal">
+              {(provided) => (
+                <Grid
+                  container
+                  spacing={3}
+                  justifyContent="center"
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                >
+                  {statItems.map((item, index) => {
+                    if (item.adminOnly && !isManagerOrAdmin) return null;
+                    return (
+                      <Draggable draggableId={item.id} index={index} key={item.id}>
+                        {(provided) => (
+                          <Grid
+                            item xs={12} sm={6} md={3}
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                          >
+                            <motion.div
+                              whileHover={{ scale: 1.05 }}
+                              transition={{ type: "spring", stiffness: 300 }}
                             >
                               <Card
                                 sx={{
+                                  backdropFilter: "blur(10px)",
+                                  backgroundColor: "rgba(255, 255, 255, 0.1)",
+                                  borderRadius: 4,
+                                  p: 2,
                                   display: 'flex',
                                   alignItems: 'center',
-                                  p: 2,
-                                  borderRadius: 3,
-                                  boxShadow: 4,
-                                  transition: 'transform 0.2s',
-                                  '&:hover': {
-                                    transform: 'scale(1.05)',
-                                  },
+                                  boxShadow: 6,
+                                  minHeight: 100,
                                 }}
                               >
                                 <Avatar sx={{ bgcolor: item.color, mr: 2 }}>
@@ -211,31 +234,31 @@ const Dashboard = () => {
                                   </Typography>
                                 </Box>
                               </Card>
-                            </Grid>
-                          )}
-                        </Draggable>
-                      );
-                    })}
-                    {provided.placeholder}
-                  </Grid>
-                )}
-              </Droppable>
-            </DragDropContext>
+                            </motion.div>
+                          </Grid>
+                        )}
+                      </Draggable>
+                    );
+                  })}
+                  {provided.placeholder}
+                </Grid>
+              )}
+            </Droppable>
+          </DragDropContext>
 
-            <Grid container spacing={3} mt={3}>
-              <Grid item xs={12}>
-              <Paper elevation={3} sx={{ p: 4, minHeight: '60vh', overflow: 'auto' }}>
-                  <Typography variant="h5" gutterBottom>
-                    Timesheet Overview
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" mb={2}>
-                    Track your work hours, projects, and pending submissions here.
-                  </Typography>
-                  {EnteredDataPage && <EnteredDataPage />}
-                </Paper>
-              </Grid>
+          <Grid container spacing={3} mt={5}>
+            <Grid item xs={12}>
+              <Paper elevation={4} sx={{ p: { xs: 2, md: 4 }, minHeight: '60vh', borderRadius: 4, backgroundColor: 'background.paper' }}>
+                <Typography variant="h5" gutterBottom>
+                  Timesheet Overview
+                </Typography>
+                <Typography variant="body2" color="text.secondary" mb={2}>
+                  Track your work hours, projects, and pending submissions here.
+                </Typography>
+                {EnteredDataPage && <EnteredDataPage />}
+              </Paper>
             </Grid>
-          </Box>
+          </Grid>
         </Box>
       </Box>
     </Layout>

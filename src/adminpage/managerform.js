@@ -8,6 +8,9 @@ import {
   Paper,
   Grid,
   MenuItem,
+  Snackbar,
+  Alert,
+  Divider,
 } from '@mui/material';
 import { styled } from '@mui/system';
 import Sidebaradmin from './sidebar';
@@ -15,21 +18,29 @@ import GroupsIcon from '@mui/icons-material/Groups';
 
 const PageContainer = styled(Box)({
   display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
   minHeight: '100vh',
   backgroundColor: '#f4f6f8',
+  padding: '2rem',
 });
 
-const ContentContainer = styled(Box)(({ theme }) => ({
-  flexGrow: 1,
-  padding: theme.spacing(4),
-}));
+const ContentContainer = styled(Box)({
+  width: '100%',
+  maxWidth: '700px',
+  padding: '2rem',
+});
 
 const FormContainer = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(4),
-  maxWidth: '600px',
-  margin: 'auto',
-  boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+  padding: theme.spacing(5),
   borderRadius: '16px',
+  backgroundColor: '#ffffff',
+  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+  border: '1px solid #e0e0e0',
+  transition: 'all 0.3s ease-in-out',
+  '&:hover': {
+    boxShadow: '0 6px 26px rgba(0, 0, 0, 0.15)',
+  },
 }));
 
 const ManagerForm = () => {
@@ -38,47 +49,47 @@ const ManagerForm = () => {
   const [managerPassword, setManagerPassword] = useState('');
   const [selectedTeam, setSelectedTeam] = useState('');
   const [teamOptions, setTeamOptions] = useState([]);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
-  // ✅ Fetch teams using Axios
   useEffect(() => {
     const fetchTeams = async () => {
       try {
         const response = await axios.get('/api/teams');
         setTeamOptions(response.data.teams || []);
       } catch (error) {
-        console.error('Error fetching teams:', error);
+        setSnackbar({ open: true, message: 'Failed to load teams', severity: 'error' });
       }
     };
     fetchTeams();
   }, []);
 
-  // ✅ Submit manager using Axios
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
     if (!managerName || !managerEmail || !managerPassword || !selectedTeam) {
-      alert('Please fill in all fields');
+      setSnackbar({ open: true, message: 'Please fill in all fields', severity: 'warning' });
       return;
     }
 
-    const newManager = {
-      name: managerName,
-      email: managerEmail,
-      password: managerPassword,
-      team: selectedTeam,
-    };
-
     try {
-      const response = await axios.post('/api/managers', newManager);
-      alert(response.data.message || 'Manager created successfully!');
+      const response = await axios.post('/api/managers', {
+        name: managerName,
+        email: managerEmail,
+        password: managerPassword,
+        team: selectedTeam,
+      });
+
+      setSnackbar({ open: true, message: 'Manager created successfully!', severity: 'success' });
       setManagerName('');
       setManagerEmail('');
       setManagerPassword('');
       setSelectedTeam('');
     } catch (error) {
-      console.error('Error creating manager:', error);
-      alert(
-        error.response?.data?.message ||
-          'Something went wrong. Please try again.'
-      );
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || 'Something went wrong.',
+        severity: 'error',
+      });
     }
   };
 
@@ -86,15 +97,17 @@ const ManagerForm = () => {
     <PageContainer>
       <ContentContainer>
         <FormContainer elevation={3}>
-          <Box display="flex" alignItems="center" justifyContent="center" mb={2}>
-            <GroupsIcon sx={{ fontSize: '2rem', marginRight: '0.5rem', color: '#1976d2' }} />
-            <Typography variant="h5" fontWeight="bold">
+          <Box display="flex" alignItems="center" justifyContent="center" mb={3}>
+            <GroupsIcon sx={{ fontSize: 40, mr: 1, color: '#1976d2' }} />
+            <Typography variant="h4" fontWeight="bold">
               Add New Manager
             </Typography>
           </Box>
 
-          <form autoComplete="off">
-            <Grid container spacing={2}>
+          <Divider sx={{ mb: 3 }} />
+
+          <form autoComplete="off" onSubmit={handleSubmit}>
+            <Grid container spacing={3}>
               <Grid item xs={12}>
                 <TextField
                   fullWidth
@@ -102,7 +115,6 @@ const ManagerForm = () => {
                   variant="outlined"
                   value={managerName}
                   onChange={(e) => setManagerName(e.target.value)}
-                  autoComplete="off"
                 />
               </Grid>
 
@@ -114,7 +126,6 @@ const ManagerForm = () => {
                   variant="outlined"
                   value={managerEmail}
                   onChange={(e) => setManagerEmail(e.target.value)}
-                  autoComplete="off"
                 />
               </Grid>
 
@@ -140,7 +151,7 @@ const ManagerForm = () => {
                   onChange={(e) => setSelectedTeam(e.target.value)}
                 >
                   <MenuItem value="">None</MenuItem>
-                  {Array.isArray(teamOptions) && teamOptions.length > 0 ? (
+                  {teamOptions.length > 0 ? (
                     teamOptions.map((team) => (
                       <MenuItem key={team._id} value={team._id}>
                         {team.name}
@@ -158,8 +169,16 @@ const ManagerForm = () => {
                   color="primary"
                   fullWidth
                   size="large"
-                  onClick={handleSubmit}
-                  sx={{ mt: 2, py: 1.5 }}
+                  type="submit"
+                  sx={{
+                    mt: 2,
+                    py: 1.5,
+                    fontWeight: 'bold',
+                    transition: '0.3s',
+                    '&:hover': {
+                      backgroundColor: '#125ea3',
+                    },
+                  }}
                 >
                   Create Manager
                 </Button>
@@ -167,6 +186,29 @@ const ManagerForm = () => {
             </Grid>
           </form>
         </FormContainer>
+
+        {/* Snackbar */}
+        <Snackbar
+  open={snackbar.open}
+  autoHideDuration={4000}
+  onClose={() => setSnackbar({ ...snackbar, open: false })}
+  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+>
+  <Alert
+    severity={snackbar.severity}
+    onClose={() => setSnackbar({ ...snackbar, open: false })}
+    sx={{
+      width: '100%',
+      minWidth: '300px',
+      fontSize: '1rem',
+      paddingY: 2,
+      paddingX: 3,
+    }}
+  >
+    {snackbar.message}
+  </Alert>
+</Snackbar>
+
       </ContentContainer>
     </PageContainer>
   );

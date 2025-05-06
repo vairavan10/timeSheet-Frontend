@@ -14,6 +14,8 @@ const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // 'success' | 'error'
   const navigate = useNavigate();
@@ -72,14 +74,23 @@ const LoginPage = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-            <input
-              type="password"
-              className="login-input"
-              placeholder="Password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <div className="password-wrapper">
+  <input
+    type={showPassword ? 'text' : 'password'}
+    className="login-input"
+    placeholder="Password"
+    required
+    value={password}
+    onChange={(e) => setPassword(e.target.value)}
+  />
+  <span
+    className="toggle-password"
+    onClick={() => setShowPassword((prev) => !prev)}
+  >
+    {showPassword ? '👁️' : '🙈'}
+  </span>
+</div>
+
             <button type="submit" className="login-button">Login</button>
           </form>
 

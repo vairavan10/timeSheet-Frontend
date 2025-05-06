@@ -20,6 +20,7 @@ const Layout = ({ children }) => {
           transition: "margin 0.3s ease",
           marginLeft: isSidebarOpen ? `${drawerWidth}px` : `${collapsedDrawerWidth}px`,
           padding:0,
+          backgroundImage: 'none',
         }}
       >
         {children}

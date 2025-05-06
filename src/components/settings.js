@@ -10,11 +10,17 @@ import {
   TextField,
   Alert,
   useTheme,
+  Slide,
+  Divider
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Logout } from '@mui/icons-material';
 import axios from 'axios';
 import Layout from './layout';
+
+const SlideUp = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
 
 const Settings = () => {
   const theme = useTheme();
@@ -24,6 +30,8 @@ const Settings = () => {
   const [newPassword, setNewPassword] = useState('');
   const [responseMessage, setResponseMessage] = useState('');
   const [error, setError] = useState('');
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -78,43 +86,88 @@ const Settings = () => {
         sx={{
           p: 4,
           minHeight: '100vh',
-          backgroundColor: theme.palette.mode === 'dark' ? '#121212' : '#f0f4f8',
-          color: theme.palette.text.primary,
+          backgroundColor: theme.palette.mode === 'dark' ? '#0f0f0f' : '#f9fafc',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 4,
+          gap: 5,
         }}
       >
-        <Typography variant="h4" fontWeight="bold">
-          Settings
+        <Typography variant="h4" fontWeight="bold" textAlign="center" color="primary">
+          ⚙️ Settings
         </Typography>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: 300 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+            width: '100%',
+            maxWidth: 400,
+          }}
+        >
           <Button
             startIcon={<Lock />}
-            fullWidth
-            variant="outlined"
+            variant="contained"
             onClick={handleOpenDialog}
+            sx={{
+              py: 1.3,
+              fontWeight: 600,
+              textTransform: 'none',
+              fontSize: '1rem',
+              background: 'linear-gradient(to right, #1976d2, #42a5f5)',
+              boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+              '&:hover': {
+                background: 'linear-gradient(to right, #1565c0, #1e88e5)',
+              },
+            }}
           >
             Change Password
           </Button>
 
+          <Divider />
+
           <Button
-            startIcon={<Logout />}
-            fullWidth
-            variant="outlined"
-            color="error"
-            onClick={handleLogout}
-          >
-            Logout
-          </Button>
+  startIcon={<Logout />}
+  variant="outlined"
+  color="error"
+  onClick={() => setLogoutDialogOpen(true)}
+  sx={{
+    py: 1.3,
+    fontWeight: 600,
+    textTransform: 'none',
+    fontSize: '1rem',
+    borderRadius: 2,
+    borderColor: 'error.main',
+    '&:hover': {
+      backgroundColor: theme.palette.error.light,
+    },
+  }}
+>
+  Logout
+</Button>
+
         </Box>
 
-        {/* Change Password Dialog */}
-        <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="sm">
-          <DialogTitle>Change Password</DialogTitle>
+        {/* Password Dialog */}
+        <Dialog
+          open={openDialog}
+          onClose={handleCloseDialog}
+          TransitionComponent={SlideUp}
+          fullWidth
+          maxWidth="sm"
+          PaperProps={{
+            sx: {
+              borderRadius: 3,
+              p: 2,
+              backgroundColor: theme.palette.background.paper,
+            },
+          }}
+        >
+          <DialogTitle fontWeight="bold" color="primary">
+            🔒 Change Password
+          </DialogTitle>
           <DialogContent>
             <TextField
               fullWidth
@@ -132,6 +185,7 @@ const Settings = () => {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
             />
+
             {responseMessage && (
               <Alert severity="success" sx={{ mt: 2 }}>
                 {responseMessage}
@@ -143,13 +197,74 @@ const Settings = () => {
               </Alert>
             )}
           </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDialog}>Cancel</Button>
-            <Button variant="contained" onClick={handleChangePassword}>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button onClick={handleCloseDialog} sx={{ textTransform: 'none' }}>
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleChangePassword}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 600,
+                px: 3,
+                background: 'linear-gradient(to right, #1976d2, #42a5f5)',
+                '&:hover': {
+                  background: 'linear-gradient(to right, #1565c0, #1e88e5)',
+                },
+              }}
+            >
               Change
             </Button>
           </DialogActions>
         </Dialog>
+        <Dialog
+  open={logoutDialogOpen}
+  onClose={() => setLogoutDialogOpen(false)}
+  TransitionComponent={SlideUp}
+  fullWidth
+  maxWidth="xs"
+  PaperProps={{
+    sx: {
+      borderRadius: 3,
+      p: 2,
+      backgroundColor: theme.palette.background.paper,
+    },
+  }}
+>
+  <DialogTitle color="error" fontWeight="bold">
+    Confirm Logout
+  </DialogTitle>
+  <DialogContent>
+    <Typography>
+      Are you sure you want to logout?
+    </Typography>
+  </DialogContent>
+  <DialogActions sx={{ px: 3, pb: 2 }}>
+    <Button
+      onClick={() => setLogoutDialogOpen(false)}
+      sx={{ textTransform: 'none' }}
+    >
+      Cancel
+    </Button>
+    <Button
+      variant="contained"
+      color="error"
+      onClick={() => {
+        setLogoutDialogOpen(false);
+        handleLogout();
+      }}
+      sx={{
+        textTransform: 'none',
+        fontWeight: 600,
+        px: 3,
+      }}
+    >
+      Logout
+    </Button>
+  </DialogActions>
+</Dialog>
+
       </Box>
     </Layout>
   );

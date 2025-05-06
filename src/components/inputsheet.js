@@ -12,15 +12,16 @@ import {
   Grid,
   Card,
   CardContent,
-  Divider
+  Divider,
+  Snackbar
 } from "@mui/material";
 import { Autocomplete } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Layout from "./layout";
-import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
-
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 const InputSheet = () => {
   const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -48,19 +49,20 @@ const InputSheet = () => {
   const [isHoursDisabled, setIsHoursDisabled] = useState(false);
 
   const dateInputRef = useRef(null);
+
   const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
   });
-  
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [employeesRes, projectsRes, extraActivityRes] = await Promise.all([
-          axios.get("api/employees/list"),
+          axios.get(`/api/employees/fulllist`),
           axios.get("api/project"),
           axios.get("api/extra-activities")
         ]);
+
         setEmployeeList(employeesRes.data.data || []);
         setProjectList(projectsRes.data.data || []);
         setExtraActivityList(extraActivityRes.data || []);
@@ -68,6 +70,7 @@ const InputSheet = () => {
         console.error("Error fetching data:", error);
       }
     };
+
     fetchData();
   }, []);
 
@@ -107,19 +110,19 @@ const InputSheet = () => {
         setIsProjectDisabled(true);
       }
     }
-   
 
     setFormData(updatedForm);
   };
+
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
-    severity: "success" // 'error', 'warning', 'info', 'success'
+    severity: "success"
   });
+
   const handleSnackbarClose = () => {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
-      
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -128,7 +131,7 @@ const InputSheet = () => {
       if (response.status === 201) {
         setSnackbar({
           open: true,
-          message: "Time Sheet Submitted Successfully!",
+          message: "✅ Time Sheet Submitted Successfully!",
           severity: "success"
         });
         setFormData({
@@ -142,67 +145,64 @@ const InputSheet = () => {
           leaveType: "",
           email: storedEmail
         });
-        setTimeout(() => navigate("/dashboard"), 1000); 
+        setTimeout(() => navigate("/dashboard"), 1000);
       } else {
-        setSnackbar({
-          open: true,
-          message: "Something went wrong! Please try again.",
-          severity: "error"
-        });
+        throw new Error();
       }
     } catch (error) {
-      console.error("Error submitting timesheet:", error);
       setSnackbar({
         open: true,
-        message: "Error submitting timesheet. Please try again later.",
+        message: "❌ Error submitting timesheet. Please try again.",
         severity: "error"
       });
     }
   };
-  
-  const handleBack = () => {
-    navigate("/dashboard");
-  };
 
-  const handleDateClick = () => {
-    if (dateInputRef.current) {
-      dateInputRef.current.showPicker();
-    }
-  };
+  const handleBack = () => navigate("/dashboard");
+  const handleDateClick = () => dateInputRef.current?.showPicker();
 
   return (
     <Layout>
-      <Container maxWidth="md" sx={{ mt: 5 }}>
-        <Card elevation={4} sx={{ borderRadius: 4 }}>
+      <Container
+        maxWidth="md"
+        sx={{
+          mt: 6,
+          mb: 6,
+          background: "linear-gradient(to bottom, #f4f6f8, #e3e7ec)",
+          borderRadius: 4,
+          p: 3,
+          boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)"
+        }}
+      >
+        <Card sx={{ borderRadius: 4, boxShadow: 4 }}>
           <CardContent>
-            <Typography variant="h4" align="center" gutterBottom>
-              Submit Time Sheet
+            <Typography
+              variant="h4"
+              align="center"
+              sx={{ fontWeight: "bold", mb: 3, color: "#333" }}
+            >
+              🕒 Daily Time Sheet Entry
             </Typography>
             <Divider sx={{ mb: 3 }} />
 
-            <Box
-              component="form"
-              onSubmit={handleSubmit}
-              sx={{ display: "flex", flexDirection: "column", gap: 3 }}
-            >
-              <Grid container spacing={2}>
-                {/* Date */}
+            <Box component="form" onSubmit={handleSubmit}>
+              <Grid container spacing={3}>
                 <Grid item xs={12} sm={6}>
                   <TextField
                     inputRef={dateInputRef}
                     name="date"
-                    label="Select Date"
+                    label="📅 Select Date"
                     type="date"
                     InputLabelProps={{ shrink: true }}
                     value={formData.date}
                     onChange={handleChange}
                     fullWidth
-                    required
                     onClick={handleDateClick}
+                    required
+                    sx={{ backgroundColor: "#fff", borderRadius: 1 }}
                   />
                 </Grid>
 
-                {/* Name */}
                 <Grid item xs={12} sm={6}>
                   <Autocomplete
                     fullWidth
@@ -215,20 +215,23 @@ const InputSheet = () => {
                         name: newValue ? newValue.name : ""
                       }))
                     }
-                    renderInput={(params) => <TextField {...params} label="Employee Name" required />}
+                    renderInput={(params) => (
+                      <TextField {...params} label="👤 Employee Name" required sx={{ backgroundColor: "#fff", borderRadius: 1 }} />
+                    )}
                     isOptionEqualToValue={(option, value) => option.name === value.name}
                   />
                 </Grid>
 
-                {/* Type of Work */}
                 <Grid item xs={12}>
-                  <FormControl fullWidth required>
-                    <InputLabel>Type of Work</InputLabel>
+                  <FormControl fullWidth required sx={{ backgroundColor: "#fff", borderRadius: 1 }}>
+                    <InputLabel>💼 Type of Work</InputLabel>
                     <Select
                       name="typeOfWork"
                       value={formData.typeOfWork}
                       onChange={handleChange}
-                      label="Type of Work"
+                      MenuProps={{
+                        PaperProps: { sx: { zIndex: 1500 } }
+                      }}
                     >
                       <MenuItem value="regular">Regular Work</MenuItem>
                       <MenuItem value="leave">Leave</MenuItem>
@@ -236,16 +239,14 @@ const InputSheet = () => {
                   </FormControl>
                 </Grid>
 
-                {/* Leave Type */}
                 {formData.typeOfWork === "leave" && (
                   <Grid item xs={12}>
-                    <FormControl fullWidth required>
-                      <InputLabel>Leave Type</InputLabel>
+                    <FormControl fullWidth required sx={{ backgroundColor: "#fff", borderRadius: 1 }}>
+                      <InputLabel>🌴 Leave Type</InputLabel>
                       <Select
                         name="leaveType"
                         value={formData.leaveType}
                         onChange={handleChange}
-                        label="Leave Type"
                       >
                         <MenuItem value="half">Half Day</MenuItem>
                         <MenuItem value="full">Full Day</MenuItem>
@@ -254,15 +255,13 @@ const InputSheet = () => {
                   </Grid>
                 )}
 
-                {/* Project */}
                 <Grid item xs={12} sm={6}>
-                  <FormControl fullWidth required disabled={isProjectDisabled}>
-                    <InputLabel>Project</InputLabel>
+                  <FormControl fullWidth required disabled={isProjectDisabled} sx={{ backgroundColor: "#fff", borderRadius: 1 }}>
+                    <InputLabel>📁 Project</InputLabel>
                     <Select
                       name="project"
                       value={formData.project || ""}
                       onChange={handleChange}
-                      label="Project"
                     >
                       <MenuItem value="">-- Select Project --</MenuItem>
                       {projectList.map((project) => (
@@ -274,15 +273,13 @@ const InputSheet = () => {
                   </FormControl>
                 </Grid>
 
-                {/* Extra Activity */}
                 <Grid item xs={12} sm={6}>
-                  <FormControl fullWidth disabled={isExtraActivityDisabled}>
-                    <InputLabel>Extra Activity</InputLabel>
+                  <FormControl fullWidth disabled={isExtraActivityDisabled} sx={{ backgroundColor: "#fff", borderRadius: 1 }}>
+                    <InputLabel>🎯 Extra Activity</InputLabel>
                     <Select
                       name="extraActivity"
                       value={formData.extraActivity}
                       onChange={handleChange}
-                      label="Extra Activity"
                     >
                       <MenuItem value="">-- Select Extra Activity --</MenuItem>
                       {extraActivityList.map((activity) => (
@@ -294,44 +291,68 @@ const InputSheet = () => {
                   </FormControl>
                 </Grid>
 
-                {/* Work Done */}
                 <Grid item xs={12}>
                   <TextField
                     name="workDone"
-                    label={formData.typeOfWork === "leave" ? "Reason for Leave" : "Work Description"}
+                    label={
+                      formData.typeOfWork === "leave"
+                        ? "✍️ Reason for Leave"
+                        : "📝 Work Description"
+                    }
                     multiline
                     rows={4}
                     value={formData.workDone}
                     onChange={handleChange}
                     fullWidth
                     required
+                    sx={{ backgroundColor: "#fff", borderRadius: 1 }}
                   />
                 </Grid>
 
-                {/* Hours Worked */}
                 <Grid item xs={12}>
                   <TextField
                     name="hours"
-                    label="Number of Hours Worked"
+                    label="⏱️ Hours Worked"
                     type="number"
+                    inputProps={{ min: 0 }}
                     value={formData.hours}
                     onChange={handleChange}
-                    inputProps={{ min: 0 }}
                     fullWidth
-                    required
                     disabled={isHoursDisabled}
+                    required
+                    sx={{ backgroundColor: "#fff", borderRadius: 1 }}
                   />
                 </Grid>
 
-                {/* Buttons */}
                 <Grid item xs={12} sm={6}>
-                  <Button variant="outlined" fullWidth color="secondary" onClick={handleBack}>
-                    Back
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    color="secondary"
+                    onClick={handleBack}
+                    startIcon={<ArrowBackIcon />}
+                    sx={{ height: 50 }}
+                  >
+                    Back to Dashboard
                   </Button>
                 </Grid>
+
                 <Grid item xs={12} sm={6}>
-                  <Button variant="contained" fullWidth color="primary" type="submit">
-                    Submit
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    color="primary"
+                    type="submit"
+                    startIcon={<CheckCircleIcon />}
+                    sx={{
+                      height: 50,
+                      backgroundColor: "#4caf50",
+                      "&:hover": {
+                        backgroundColor: "#388e3c"
+                      }
+                    }}
+                  >
+                    Submit Timesheet
                   </Button>
                 </Grid>
               </Grid>
@@ -339,17 +360,16 @@ const InputSheet = () => {
           </CardContent>
         </Card>
       </Container>
-      <Snackbar
-  open={snackbar.open}
-  autoHideDuration={4000}
-  onClose={handleSnackbarClose}
-  anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
->
-  <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: "100%" }}>
-    {snackbar.message}
-  </Alert>
-</Snackbar>
 
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbar.severity}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Layout>
   );
 };

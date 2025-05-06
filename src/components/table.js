@@ -103,35 +103,84 @@ const [openModal, setOpenModal] = useState(false);
     setOpenModal(true);
   };
   
+  // const handleFilterValues = () => {
+  //   const filterValues = [];
+  
+  //   timesheetList.forEach((entry) => {
+  //     if (activeFilter === "description") {
+  //       if (entry.typeOfWork === "Leave") {
+  //         filterValues.push({ label: "Leave", value: "Leave" });
+  
+  //         if (entry.leaveType) {
+  //           filterValues.push({ label: entry.leaveType, value: entry.leaveType });
+  //         }
+  //       }
+  
+  //       if (entry.typeOfWork === "Extra Activity") {
+  //         filterValues.push({ label: "Extra Activity", value: "Extra Activity" });
+  
+  //         if (entry.extraActivity) {
+  //           filterValues.push({ label: entry.extraActivity, value: entry.extraActivity });
+  //         }
+  //       }
+  
+  //       if (entry.typeOfWork === "Regular Work") {
+  //         filterValues.push({ label: "Regular Work", value: "Regular Work" });
+        
+  //         if (entry.project && entry.project.name) {
+  //           filterValues.push({ label: entry.project.name, value: entry.project.name });
+  //         }
+  //       }
+        
+  //     }
+  
+  //     if (activeFilter === "name" && entry.name) {
+  //       filterValues.push({ label: entry.name, value: entry.name });
+  //     }
+  
+  //     if (activeFilter === "workDone" && entry.typeOfWork === "Regular Work" && entry.workDone) {
+  //       filterValues.push({
+  //         label: entry.workDone.length > 30 ? entry.workDone.substring(0, 30) + "..." : entry.workDone,
+  //         value: entry.workDone, // full value for actual filtering
+  //       });
+  //     }
+      
+      
+  //   });
+  
+  //   // Filter out duplicates based on value
+  //   const uniqueMap = new Map();
+  //   filterValues.forEach(item => {
+  //     if (!uniqueMap.has(item.value)) {
+  //       uniqueMap.set(item.value, item);
+  //     }
+  //   });
+  
+  //   return Array.from(uniqueMap.values());
+  // };
   const handleFilterValues = () => {
     const filterValues = [];
   
     timesheetList.forEach((entry) => {
       if (activeFilter === "description") {
+        // Add "Leave" for entries with typeOfWork "Leave"
         if (entry.typeOfWork === "Leave") {
           filterValues.push({ label: "Leave", value: "Leave" });
-  
-          if (entry.leaveType) {
-            filterValues.push({ label: entry.leaveType, value: entry.leaveType });
-          }
         }
   
+        // Add "Extra Activity" for entries with typeOfWork "Extra Activity"
         if (entry.typeOfWork === "Extra Activity") {
           filterValues.push({ label: "Extra Activity", value: "Extra Activity" });
-  
-          if (entry.extraActivity) {
-            filterValues.push({ label: entry.extraActivity, value: entry.extraActivity });
-          }
         }
   
+        // Add "Regular Work" and the project name for entries with typeOfWork "Regular Work"
         if (entry.typeOfWork === "Regular Work") {
           filterValues.push({ label: "Regular Work", value: "Regular Work" });
-        
+  
           if (entry.project && entry.project.name) {
             filterValues.push({ label: entry.project.name, value: entry.project.name });
           }
         }
-        
       }
   
       if (activeFilter === "name" && entry.name) {
@@ -139,13 +188,18 @@ const [openModal, setOpenModal] = useState(false);
       }
   
       if (activeFilter === "workDone" && entry.typeOfWork === "Regular Work" && entry.workDone) {
+        let labelText = entry.workDone.length > 30 ? entry.workDone.substring(0, 30) + "..." : entry.workDone;
+  
+        // Include the project name in the workDone filter if a project exists
+        if (entry.project && entry.project.name) {
+          labelText += ` (Project: ${entry.project.name})`;
+        }
+  
         filterValues.push({
-          label: entry.workDone.length > 30 ? entry.workDone.substring(0, 30) + "..." : entry.workDone,
+          label: labelText,
           value: entry.workDone, // full value for actual filtering
         });
       }
-      
-      
     });
   
     // Filter out duplicates based on value
@@ -159,7 +213,7 @@ const [openModal, setOpenModal] = useState(false);
     return Array.from(uniqueMap.values());
   };
   
-
+  
   // Function to filter timesheetList based on selected filters
   const filterTimesheetList = () => {
     return timesheetList.filter((entry) => {

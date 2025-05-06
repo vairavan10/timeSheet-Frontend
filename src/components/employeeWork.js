@@ -34,22 +34,27 @@ const EmployeeSummaryPage = () => {
       let hoursWorked = 0;
       let leaveCount = 0;
       let daysWorked = 0;
+      let totalAvailableHours = 0; // Add this variable to track total available hours
   
       Object.values(dailyData).forEach(({ hours, leave }) => {
         hoursWorked += hours;
         leaveCount += leave;
   
-        // If leave is 0.5 and work hours > 0 => count as 0.5 day
+        // Count days worked and leave
         if (leave === 0.5 && hours > 0) {
           daysWorked += 0.5;
+          totalAvailableHours += 8; // Adding 8 hours for the half-day leave
         } else if (leave === 0 && hours > 0) {
           daysWorked += 1;
+          totalAvailableHours += 8; // Adding 8 hours for the full day worked
+        } else if (leave === 1) {
+          totalAvailableHours += 8; // Adding 8 hours for the full leave day
         }
-        // If leave is 1 full day, don't count it as work
       });
   
-      const utilization = daysWorked > 0
-        ? ((hoursWorked / (daysWorked * 8)) * 100).toFixed(2)
+      // Now calculate utilization based on the correct total available hours
+      const utilization = totalAvailableHours > 0
+        ? ((hoursWorked / totalAvailableHours) * 100).toFixed(2)
         : '0.00';
   
       results.push({

@@ -19,11 +19,12 @@ const EmployeesListPage = () => {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const managerId = JSON.parse(localStorage.getItem('user'))?.id;
 
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const response = await axios.get('api/employees/list');
+        const response = await axios.get(`/api/employees/list?managerId=${managerId}`);
         setEmployees(response.data.data);
       } catch (error) {
         setError('❌ Failed to load employee data');

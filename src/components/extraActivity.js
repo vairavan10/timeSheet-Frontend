@@ -1,122 +1,3 @@
-// import React, { useState, useEffect } from 'react';
-// import {
-//   Box,
-//   TextField,
-//   Button,
-//   Typography,
-//   List,
-//   ListItem,
-//   Paper,
-//   Alert,
-//   Container,
-// } from '@mui/material';
-// import axios from 'axios';
-// import SideMenu from './sidebar';
-// import Layout from './layout';
-
-// const ExtraActivityPage = () => {
-//   const [activityName, setActivityName] = useState('');
-//   const [activities, setActivities] = useState([]);
-//   const [message, setMessage] = useState('');
-//   const [error, setError] = useState('');
-
-//   const fetchActivities = async () => {
-//     try {
-//       const res = await axios.get('api/extra-activities');
-//       setActivities(res.data);
-//     } catch (err) {
-//       console.error('Error fetching activities', err);
-//     }
-//   };
-
-//   useEffect(() => {
-//     fetchActivities();
-//   }, []);
-
-//   const handleAddActivity = async () => {
-//     if (!activityName.trim()) {
-//       setError('Activity name is required');
-//       return;
-//     }
-  
-//     try {
-//       const user = JSON.parse(localStorage.getItem('user'));
-//       const createdBy = user?.id;
-  
-//       const res = await axios.post(
-//         'api/extra-activities',
-//         {
-//           name: activityName,
-//           createdBy: createdBy,
-//         }
-//       );
-  
-//       setMessage('✅ Activity added successfully!');
-//       setError('');
-//       setActivityName('');
-//       fetchActivities();
-//     } catch (err) {
-//       setError(err.response?.data?.message || 'Error adding activity');
-//       setMessage('');
-//     }
-//   };
-  
-
-//   return (
-//    <Layout>
-//   <Box sx={{ display: 'flex' }}>
-//     {/* <SideMenu /> */}
-    
-//     <Box
-//       component="main"
-//       sx={{
-//         flexGrow: 1,
-//         p: 1,
-//         backgroundColor: 'background.default',
-//         minHeight: '100vh',
-//         pl: { xs: 0, sm: '-10x' }, // Same as dashboard for consistency
-//         overflowX: 'hidden',
-//         overflowY: 'auto'
-//       }}
-//     >
-//       <Container maxWidth="sm" sx={{ mt: 6 }}>
-//         <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
-//           <Typography variant="h5" gutterBottom align="center">
-//             ➕ Add Extra Activity
-//           </Typography>
-
-//           <TextField
-//             fullWidth
-//             label="Activity Name"
-//             value={activityName}
-//             onChange={(e) => setActivityName(e.target.value)}
-//             sx={{ mb: 2 }}
-//           />
-
-//           <Button fullWidth variant="contained" onClick={handleAddActivity}>
-//             Add Activity
-//           </Button>
-
-//           {message && <Alert severity="success" sx={{ mt: 2 }}>{message}</Alert>}
-//           {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
-
-//           <Box sx={{ mt: 4 }}>
-//             <Typography variant="h6">📋 Existing Activities:</Typography>
-//             <List>
-//               {activities.map((activity) => (
-//                 <ListItem key={activity._id}>• {activity.name}</ListItem>
-//               ))}
-//             </List>
-//           </Box>
-//         </Paper>
-//       </Container>
-//     </Box>
-//   </Box>
-//   </Layout>
-//   );
-// };
-
-// export default ExtraActivityPage;
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -132,12 +13,30 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 import Layout from './layout';
+import { IconButton } from '@mui/material';
+import { Edit, Check, Close ,Delete } from '@mui/icons-material';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
+} from '@mui/material';
+
+
+
 
 const ExtraActivityPage = () => {
   const [activityName, setActivityName] = useState('');
   const [activities, setActivities] = useState([]);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+
+  const [editId, setEditId] = useState(null); // current editing ID
+  const [editValue, setEditValue] = useState(''); // input for editing
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+const [selectedId, setSelectedId] = useState(null);
 
   const fetchActivities = async () => {
     try {
@@ -163,7 +62,7 @@ const ExtraActivityPage = () => {
       const user = JSON.parse(localStorage.getItem('user'));
       const createdBy = user?.id;
 
-      const res = await axios.post('api/extra-activities', {
+      await axios.post('api/extra-activities', {
         name: activityName,
         createdBy: createdBy,
       });
@@ -178,6 +77,58 @@ const ExtraActivityPage = () => {
     }
   };
 
+  const startEditing = (id, currentName) => {
+    setEditId(id);
+    setEditValue(currentName);
+  };
+
+  const cancelEditing = () => {
+    setEditId(null);
+    setEditValue('');
+  };
+
+  const saveEditedActivity = async (id) => {
+    if (!editValue.trim()) return;
+
+    try {
+      await axios.put(`api/extra-activities/${id}`, {
+        name: editValue,
+      });
+
+      setMessage('✅ Activity updated successfully!');
+      setEditId(null);
+      setEditValue('');
+      fetchActivities();
+    } catch (err) {
+      setError('Error updating activity');
+    }
+  };
+  const openConfirmDialog = (id) => {
+    setSelectedId(id);
+    setConfirmOpen(true);
+  };
+  
+  const closeConfirmDialog = () => {
+    setSelectedId(null);
+    setConfirmOpen(false);
+  };
+  
+  const handleConfirmDelete = async () => {
+    try {
+      await axios.delete(`api/extra-activities/${selectedId}`);
+      setMessage('🗑️ Activity deleted successfully!');
+      setError('');
+      fetchActivities();
+    } catch (err) {
+      setError('Error deleting activity');
+      setMessage('');
+    } finally {
+      closeConfirmDialog();
+    }
+  };
+  
+
+
   return (
     <Layout>
       <Box sx={{ display: 'flex' }}>
@@ -189,17 +140,20 @@ const ExtraActivityPage = () => {
             pt: 4,
             pb: 8,
             minHeight: '100vh',
-            backgroundColor: '#f6f8fa',
+            backgroundColor: 'background.default',
+            color: 'text.primary',
           }}
         >
           <Container maxWidth="md">
             <Paper
-              elevation={0}
+              elevation={1}
               sx={{
                 p: 4,
-                border: '1px solid #d0d7de',
                 borderRadius: 2,
-                backgroundColor: '#ffffff',
+                backgroundColor: 'background.paper',
+                color: 'text.primary',
+                border: '1px solid',
+                borderColor: 'divider',
               }}
             >
               <Typography variant="h5" sx={{ fontWeight: 600, mb: 3 }}>
@@ -248,16 +202,50 @@ const ExtraActivityPage = () => {
                     <ListItem
                       key={activity._id}
                       sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
                         px: 1,
                         py: 0.5,
-                        fontSize: '0.95rem',
-                        borderBottom: '1px solid #eaecef',
+                        borderBottom: '1px solid',
+                        borderColor: 'divider',
                         '&:hover': {
-                          backgroundColor: '#f6f8fa',
+                          backgroundColor: 'action.hover',
                         },
                       }}
                     >
-                      • {activity.name}
+                      {editId === activity._id ? (
+                        <>
+                          <TextField
+                            size="small"
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            sx={{ flex: 1, mr: 1 }}
+                          />
+                          <IconButton onClick={() => saveEditedActivity(activity._id)} color="success">
+                            <Check />
+                          </IconButton>
+                          <IconButton onClick={cancelEditing} color="error">
+                            <Close />
+                          </IconButton>
+                        </>
+                      ) : (
+                        <>
+                          <Typography variant="body1" sx={{ flex: 1 }}>
+                            • {activity.name}
+                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+  <IconButton onClick={() => startEditing(activity._id, activity.name)} size="small" color="primary">
+    <Edit />
+  </IconButton>
+  <IconButton onClick={() => openConfirmDialog(activity._id)} size="small" color="error">
+  <Delete />
+</IconButton>
+
+</Box>
+
+                        </>
+                      )}
                     </ListItem>
                   ))
                 )}
@@ -266,8 +254,30 @@ const ExtraActivityPage = () => {
           </Container>
         </Box>
       </Box>
+      <Dialog
+  open={confirmOpen}
+  onClose={closeConfirmDialog}
+>
+  <DialogTitle>Confirm Delete</DialogTitle>
+  <DialogContent>
+    <DialogContentText>
+      Are you sure you want to delete this activity? This action cannot be undone.
+    </DialogContentText>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={closeConfirmDialog} color="primary">
+      Cancel
+    </Button>
+    <Button onClick={handleConfirmDelete} color="error" autoFocus>
+      Delete
+    </Button>
+  </DialogActions>
+</Dialog>
+
     </Layout>
   );
 };
 
 export default ExtraActivityPage;
+
+
