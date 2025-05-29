@@ -223,47 +223,157 @@ const InputSheet = () => {
                 </Grid>
 
                 <Grid item xs={12}>
-                  <FormControl fullWidth required sx={{ backgroundColor: "#fff", borderRadius: 1 }}>
-                    <InputLabel>💼 Type of Work</InputLabel>
-                    <Select
-                      name="typeOfWork"
-                      value={formData.typeOfWork}
-                      onChange={handleChange}
-                      MenuProps={{
-                        PaperProps: { sx: { zIndex: 1500 } }
-                      }}
-                    >
-                      <MenuItem value="regular">Regular Work</MenuItem>
-                      <MenuItem value="leave">Leave</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-
+  <FormControl
+    fullWidth
+    required
+    sx={{
+      backgroundColor: "#fff",
+      borderRadius: 1,
+      '& .MuiInputBase-root': {
+        borderRadius: 1
+      },
+      '& .MuiInputLabel-root': {
+        fontWeight: 'bold'
+      }
+    }}
+  >
+    <InputLabel id="typeOfWork-label">💼 Type of Work</InputLabel>
+    <Select
+      labelId="typeOfWork-label"
+      name="typeOfWork"
+      value={formData.typeOfWork}
+      onChange={handleChange}
+      label="💼 Type of Work"
+      sx={{
+        textAlign: 'left',
+        fontSize: '1rem',
+        fontWeight: 500
+      }}
+      MenuProps={{
+        PaperProps: {
+          sx: {
+            zIndex: 1500,
+            mt: 1,
+            borderRadius: 1.5,
+            boxShadow: 3,
+            '& .MuiMenuItem-root': {
+              px: 2,
+              py: 1.5
+            }
+          }
+        }
+      }}
+    >
+      <MenuItem value="regular">🛠 Regular Work</MenuItem>
+      <MenuItem value="leave">🏖 Leave</MenuItem>
+    </Select>
+  </FormControl>
+</Grid>
                 {formData.typeOfWork === "leave" && (
                   <Grid item xs={12}>
-                    <FormControl fullWidth required sx={{ backgroundColor: "#fff", borderRadius: 1 }}>
-                      <InputLabel>🌴 Leave Type</InputLabel>
-                      <Select
-                        name="leaveType"
-                        value={formData.leaveType}
-                        onChange={handleChange}
-                      >
-                        <MenuItem value="half">Half Day</MenuItem>
-                        <MenuItem value="full">Full Day</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
+  <FormControl 
+    fullWidth 
+    required 
+    variant="outlined" 
+    sx={{
+      '& .MuiOutlinedInput-root': {
+        backgroundColor: '#fff',
+        borderRadius: 1,
+        '& fieldset': {
+          borderColor: '#ccc',
+        },
+        '&:hover fieldset': {
+          borderColor: '#888', // Hover effect
+        },
+        '&.Mui-focused fieldset': {
+          borderColor: '#1976d2', // Focus color
+        }
+      }
+    }}
+  >
+    <InputLabel id="leave-type-label">🌴 Leave Type</InputLabel>
+    <Select
+      labelId="leave-type-label"
+      id="leave-type"
+      name="leaveType"
+      value={formData.leaveType}
+      onChange={handleChange}
+      label="🌴 Leave Type"
+    >
+      <MenuItem value="half">Half Day</MenuItem>
+      <MenuItem value="full">Full Day</MenuItem>
+    </Select>
+  </FormControl>
+</Grid>
+
                 )}
 
                 <Grid item xs={12} sm={6}>
-                  <FormControl fullWidth required disabled={isProjectDisabled} sx={{ backgroundColor: "#fff", borderRadius: 1 }}>
-                    <InputLabel>📁 Project</InputLabel>
-                    <Select
-                      name="project"
-                      value={formData.project || ""}
-                      onChange={handleChange}
-                    >
-                      <MenuItem value="">-- Select Project --</MenuItem>
+                  <FormControl
+                    fullWidth
+                    required
+                    disabled={isProjectDisabled}
+                    variant="outlined"
+                    sx={{
+                      backgroundColor: "#fff",
+                      borderRadius: 1,
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 1,
+                        height: 56,
+                        paddingTop: 0,
+                        paddingBottom: 0
+                      },
+                      '& .MuiInputLabel-outlined': {
+                        position: 'absolute',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        left: 14,
+                        fontSize: '1rem',
+                        fontWeight: 'bold',
+                        backgroundColor: '#fff',
+                        padding: '0 4px',
+                        pointerEvents: 'none',
+                      },
+                      '& .MuiInputLabel-shrink': {
+                        display: 'none',
+                      }
+                    }}
+                  >
+                    <InputLabel id="project-label" shrink={false}>
+                      📁 Project
+                    </InputLabel>
+
+                                  <Select
+                        labelId="project-label"
+                        name="project"
+                        value={formData.project || ""}
+                        onChange={handleChange}
+                        displayEmpty
+                        sx={{
+                          fontSize: '1rem',
+                          fontWeight: 500,
+                          pl: '48px',    
+                          textAlign: 'center'
+                        }}
+                        MenuProps={{
+                          PaperProps: {
+                            sx: {
+                              zIndex: 1500,
+                              mt: 1,
+                              borderRadius: 1.5,
+                              boxShadow: 3,
+                              '& .MuiMenuItem-root': {
+                                px: 2,
+                                py: 1.5
+                              }
+                            }
+                          }
+                        }}
+                      >
+
+                      <MenuItem  value="">
+                        <em>-- Select Project --</em>
+                      </MenuItem>
                       {projectList.map((project) => (
                         <MenuItem key={project._id} value={project._id}>
                           {project.name}
@@ -272,16 +382,85 @@ const InputSheet = () => {
                     </Select>
                   </FormControl>
                 </Grid>
-
                 <Grid item xs={12} sm={6}>
-                  <FormControl fullWidth disabled={isExtraActivityDisabled} sx={{ backgroundColor: "#fff", borderRadius: 1 }}>
-                    <InputLabel>🎯 Extra Activity</InputLabel>
+                  <FormControl
+                    fullWidth
+                    required
+                    disabled={isExtraActivityDisabled}
+                    variant="outlined"
+                    sx={{
+                      backgroundColor: "#fff",
+                      borderRadius: 1,
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 1,
+                        height: 56,
+                        paddingTop: 0,
+                        paddingBottom: 0,
+                      },
+                      '& .MuiInputLabel-outlined': {
+                        position: 'absolute',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        left: 14,
+                        fontSize: '1rem',
+                        fontWeight: 'bold',
+                        backgroundColor: '#fff',
+                        padding: '0 4px',
+                        pointerEvents: 'none',
+                      },
+                      '& .MuiInputLabel-shrink': {
+                        display: 'none',
+                      },
+                    }}
+                  >
+                    <InputLabel id="extra-activity-label" shrink={false}>
+                      🎯 Extra Activity
+                    </InputLabel>
+
                     <Select
+                      labelId="extra-activity-label"
                       name="extraActivity"
-                      value={formData.extraActivity}
+                      value={formData.extraActivity || ""}
                       onChange={handleChange}
+                      displayEmpty
+                      sx={{
+                        fontSize: '1rem',
+                        fontWeight: 500,
+                        pl: '48px',
+                        textAlign: 'right',  // Align text inside Select box right
+                      }}
+                      renderValue={(selected) => {
+                        if (!selected) {
+                          return (
+                            <em style={{ display: 'block', textAlign: 'center', paddingLeft: '50px' }}>
+                              -- Select Activity --
+                            </em>
+                          );
+                        }
+                        return (
+                          <span style={{ display: 'block', textAlign: 'center', paddingLeft: '50px' }}>
+                            {selected}
+                          </span>
+                        );
+                      }}
+                      MenuProps={{
+                        PaperProps: {
+                          sx: {
+                            zIndex: 1500,
+                            mt: 1,
+                            borderRadius: 1.5,
+                            boxShadow: 3,
+                            '& .MuiMenuItem-root': {
+                              px: 2,
+                              py: 1.5,
+                            },
+                          },
+                        },
+                      }}
                     >
-                      <MenuItem value="">-- Select Extra Activity --</MenuItem>
+                      <MenuItem value="">
+                        <em>-- Select Extra Activity --</em>
+                      </MenuItem>
                       {extraActivityList.map((activity) => (
                         <MenuItem key={activity._id} value={activity.name}>
                           {activity.name}
@@ -362,6 +541,7 @@ const InputSheet = () => {
       </Container>
 
       <Snackbar
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={handleSnackbarClose}

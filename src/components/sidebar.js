@@ -36,6 +36,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import { SummarizeOutlined, SupervisorAccount } from "@mui/icons-material";
+import TimerRoundedIcon from '@mui/icons-material/TimerRounded';
 
 import { NavLink } from "react-router-dom";
 import { ThemeContext } from "../context/ThemeContext";
@@ -47,6 +48,7 @@ const collapsedDrawerWidth = 72;
 const menuItems = [
   { text: "Dashboard", icon: <SpaceDashboardRoundedIcon />, path: "/dashboard" },
   { text: "Input Sheet", icon: <NoteAddRoundedIcon />, path: "/inputsheet" },
+  { text: "TaskTimer", icon: <TimerRoundedIcon />, path: "/tasktimer" },
   { text: "Employees", icon: <Groups2RoundedIcon />, path: "/Employees" },
   { text: "Table", icon: <TableViewRoundedIcon />, path: "/fulltable" },
   { text: "Projects", icon: <WorkHistoryRoundedIcon />, path: "/projects" },
@@ -66,6 +68,7 @@ const SideMenu = ({ open, setOpen }) => {
 
   const filteredMenuItems = menuItems.filter((item) => {
     if (item.text === "Profile") return normalizedRole === "employee";
+     if (item.text === "TaskTimer") return normalizedRole === "employee";
     if (["Employees", "Table", "Projects", "ExtraActivity", "EmployeeLog"].includes(item.text)) {
       return ["ceo", "manager", "hr"].includes(normalizedRole);
     }

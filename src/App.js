@@ -24,6 +24,7 @@ import ProjectListPage from './components/projectview';
 import ViewReportPage from './components/viewReportPage';
 import ExtraActivityPage from './components/extraActivity';
 import EmployeeSummaryPage from './components/employeeWork'
+import TaskTimer from './components/taskTImer';
 
 function App() {
   const { darkMode, setDarkMode } = useContext(ThemeContext);
@@ -51,6 +52,7 @@ function App() {
         <Route path="/project/:projectId/report" element={<ViewReportPage />} />
         <Route path="/extraActivity" element={<ExtraActivityPage />} />
         <Route path="/employeeSumarry" element={<EmployeeSummaryPage />} />
+        <Route path="/tasktimer" element={<TaskTimer/>}/>
 
 
 

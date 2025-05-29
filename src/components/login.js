@@ -28,6 +28,7 @@ const LoginPage = () => {
 
       localStorage.setItem('user', JSON.stringify(data.user));
 
+
       // Show success Snackbar
       setSnackbarMessage('Login successful!');
       setSnackbarSeverity('success');
