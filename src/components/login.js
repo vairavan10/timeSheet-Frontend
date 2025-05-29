@@ -62,7 +62,7 @@ const LoginPage = () => {
 
         {/* Right Section */}
         <div className="login-box">
-          <h2>Welcome Back!</h2>
+          <h2>Welcome!!</h2>
           <p>Please login to continue</p>
 
           <form className="login-form" onSubmit={handleSubmit}>
@@ -87,7 +87,7 @@ const LoginPage = () => {
     className="toggle-password"
     onClick={() => setShowPassword((prev) => !prev)}
   >
-    {showPassword ? '👁️' : '🙈'}
+    {showPassword ? '🐒' : '🙈'}
   </span>
 </div>
 

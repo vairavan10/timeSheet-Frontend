@@ -26,9 +26,9 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Close';
-import axios from '../axios'; // ✅ Adjust the path if needed
+import axios from '../axios'; 
 
-// 🔵 Styled container for form
+
 const FormContainer = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
   maxWidth: 600,
@@ -44,36 +44,35 @@ const TeamForm = () => {
   const [editingIndex, setEditingIndex] = useState(null);
   const [editedName, setEditedName] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
-const [teamToDelete, setTeamToDelete] = useState(null);
-  
+  const [teamToDelete, setTeamToDelete] = useState(null);
 
   // 🟢 Fetch teams
-  useEffect(() => {
-    const fetchTeams = async () => {
-      try {
-        const response = await axios.get('/api/teams');
-        const result = response.data;
+useEffect(() => {
+  const fetchTeams = async () => {
+    try {
+      const response = await axios.get('/api/teams');
+      const result = response.data;
 
-        if (Array.isArray(result.teams)) {
-          const formattedTeams = result.teams.map((team) => ({
-            _id: team._id,
-            name: team.name,
-            createdAt: new Date(team.createdAt).toLocaleString(),
-          }));
-          setTeams(formattedTeams);
-        }
-      } catch (error) {
-        console.error('Error fetching teams:', error);
+      if (Array.isArray(result.teams)) {
+        const formattedTeams = result.teams.map((team) => ({
+          _id: team._id,
+          name: team.name,
+          createdAt: new Date(team.createdAt).toLocaleDateString(), // Only Date
+        }));
+        setTeams(formattedTeams);
       }
-    };
+    } catch (error) {
+      console.error('Error fetching teams:', error);
+    }
+  };
 
-    fetchTeams();
-  }, []);
+  fetchTeams();
+}, []);
 
-  // 🟢 Create team
+
   const handleSubmit = async () => {
     if (!teamName.trim()) return;
-
+ 
     try {
       const response = await axios.post('/api/teams', { name: teamName });
       const res = response.data;
@@ -82,8 +81,9 @@ const [teamToDelete, setTeamToDelete] = useState(null);
         const newTeam = {
           _id: res.team?._id,
           name: teamName,
-          createdAt: new Date().toLocaleString(),
+          createdAt: new Date().toLocaleDateString(), // only date
         };
+        
         setTeams([newTeam, ...teams]);
         setTeamName('');
       }
@@ -92,12 +92,11 @@ const [teamToDelete, setTeamToDelete] = useState(null);
     }
   };
 
-  // 🟡 Delete team
   const confirmDelete = (id) => {
     setTeamToDelete(id);
     setOpenDialog(true);
   };
-  
+
   const handleConfirmDelete = async () => {
     try {
       await axios.delete(`/api/teams/${teamToDelete}`);
@@ -109,17 +108,7 @@ const [teamToDelete, setTeamToDelete] = useState(null);
       setTeamToDelete(null);
     }
   };
-  
-  const handleDelete = async (id) => {
-    try {
-      await axios.delete(`/api/teams/${id}`);
-      setTeams((prev) => prev.filter((team) => team._id !== id));
-    } catch (error) {
-      console.error('Error deleting team:', error);
-    }
-  };
 
-  // 🟡 Save edited team
   const handleSave = async (id) => {
     try {
       const response = await axios.patch(`/api/teams/${id}`, { name: editedName });
@@ -154,17 +143,19 @@ const [teamToDelete, setTeamToDelete] = useState(null);
           margin="normal"
         />
 
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleSubmit}
-          sx={{ mt: 2, borderRadius: 2 }}
-        >
-          Create Team
-        </Button>
+<Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+  <Button
+    variant="contained"
+    color="primary"
+    onClick={handleSubmit}
+    sx={{ borderRadius: 2 }}
+  >
+    Create Team
+  </Button>
+</Box>
+
       </FormContainer>
 
-      {/* 🔵 Team Table */}
       <Box mt={6} width="100%" maxWidth="900px">
         {teams.length > 0 ? (
           <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
@@ -216,7 +207,6 @@ const [teamToDelete, setTeamToDelete] = useState(null);
                             <EditIcon />
                           </IconButton>
                           <IconButton onClick={() => confirmDelete(team._id)} color="error">
-
                             <DeleteIcon />
                           </IconButton>
                         </>
@@ -228,33 +218,31 @@ const [teamToDelete, setTeamToDelete] = useState(null);
             </Table>
           </TableContainer>
         ) : (
-          <Typography variant="body1" mt={4}>
-            No teams found.
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+            <Typography variant="body1" mt={4} sx={{ textAlign: 'center', color: 'gray' }}>
+              No teams found.
+            </Typography>
+          </Box>
         )}
       </Box>
-      <Dialog
-  open={openDialog}
-  onClose={() => setOpenDialog(false)}
->
-  <DialogTitle>Confirm Deletion</DialogTitle>
-  <DialogContent>
-    <DialogContentText>
-      Are you sure you want to delete this team? This action cannot be undone.
-    </DialogContentText>
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={() => setOpenDialog(false)} color="primary">
-      Cancel
-    </Button>
-    <Button onClick={handleConfirmDelete} color="error" variant="contained">
-      Delete
-    </Button>
-  </DialogActions>
-</Dialog>
 
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this team? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmDelete} color="error" variant="contained">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
-    
   );
 };
 
