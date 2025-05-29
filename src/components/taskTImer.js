@@ -4,8 +4,8 @@ import Layout from "./layout";
 import Confetti from "react-confetti";
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
-import humanImg from "../"; // Import your image
-
+import humanImg from "../asset/human.png"; 
+import { Button, Snackbar, Alert } from "@mui/material";
 const TaskTimer = () => {
   const [taskName, setTaskName] = useState("");
   const [isRunning, setIsRunning] = useState(false);
@@ -17,17 +17,22 @@ const TaskTimer = () => {
   const storedUser = JSON.parse(localStorage.getItem("user")) || {};
   const [showConfetti, setShowConfetti] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [showPopup, setShowPopup] = useState(false); // New state for popup
+  const [showPopup, setShowPopup] = useState(false); 
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
 
-  // Fetch projects once
+
   useEffect(() => {
     axios
       .get("/api/project")
       .then((res) => setProjects(res.data.data))
-      .catch(console.error);
+      .catch((err) => {
+        console.error(err);
+        showSnackbar("Failed to load projects", "error");
+      });
   }, []);
 
-  // Timer logic
   useEffect(() => {
     if (isRunning && !isPaused) {
       timerRef.current = setInterval(() => {
@@ -39,37 +44,51 @@ const TaskTimer = () => {
     return () => clearInterval(timerRef.current);
   }, [isRunning, isPaused]);
 
-  // Show popup animation when task starts
   useEffect(() => {
     if (isRunning && !isPaused) {
       setShowPopup(true);
       const timer = setTimeout(() => {
         setShowPopup(false);
-      }, 3000); // Popup visible for 3 seconds
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [isRunning, isPaused]);
 
-  // Handle start with popup
+  // Snackbar helper function
+  const showSnackbar = (message, severity = "info") => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
   const handleStart = () => {
-    if (!taskName.trim()) return alert("Please enter a task name.");
+    if (!taskName.trim()) {
+      showSnackbar("Please enter a task name.", "error");
+      return;
+    }
     setIsRunning(true);
     setIsPaused(false);
+    showSnackbar("Timer started!", "success");
   };
 
   const handlePauseResume = () => {
     setIsPaused(!isPaused);
+    showSnackbar(isPaused ? "Timer resumed" : "Timer paused", "info");
   };
 
   const handleStop = () => {
     setIsRunning(false);
     setIsPaused(false);
+    showSnackbar("Timer stopped", "warning");
   };
 
-  // On submit, show confetti celebration and reset
   const handleSubmit = async () => {
     if (!taskName.trim() || elapsedTime === 0) {
-      return alert("Start the timer and enter the task name before submitting.");
+      showSnackbar(
+        "Start the timer and enter the task name before submitting.",
+        "error"
+      );
+      return;
     }
     try {
       await axios.post("/api/timesheet/addtimesheet", {
@@ -85,17 +104,19 @@ const TaskTimer = () => {
       });
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 5000);
-      alert("🎉 Task submitted successfully!");
+      showSnackbar("🎉 Task submitted successfully!", "success");
+
       setTaskName("");
       setElapsedTime(0);
       setSelectedProject("");
+      setIsRunning(false);
+      setIsPaused(false);
     } catch (err) {
       console.error(err);
-      alert("Error submitting task.");
+      showSnackbar("Error submitting task.", "error");
     }
   };
 
-  // Format seconds into HH:MM:SS
   const formatTime = (seconds) => {
     const hrs = String(Math.floor(seconds / 3600)).padStart(2, "0");
     const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
@@ -106,7 +127,6 @@ const TaskTimer = () => {
   const maxSeconds = 7200; // 2 hours max
   const progress = Math.min(elapsedTime / maxSeconds, 1);
 
-  // Emoji feedback based on elapsed time
   const timeEmoji =
     elapsedTime < 60
       ? "⏳"
@@ -117,6 +137,12 @@ const TaskTimer = () => {
       : elapsedTime < 1800
       ? "💪"
       : "🏆";
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === "clickaway") return;
+    setSnackbarOpen(false);
+  };
+
 
   return (
     <Layout>
@@ -232,7 +258,7 @@ const TaskTimer = () => {
               <svg
                 viewBox="0 0 36 36"
                 style={{
-                  transform: "rotate(-90deg)",
+                  transform: "rotate(0deg)",
                   width: "200px",
                   height: "200px",
                 }}
@@ -277,7 +303,7 @@ const TaskTimer = () => {
             </div>
 
             {/* Dark mode toggle */}
-            <div style={{ marginTop: 10 }}>
+            {/* <div style={{ marginTop: 10 }}>
               <label style={{ cursor: "pointer" }}>
                 <input
                   type="checkbox"
@@ -286,7 +312,7 @@ const TaskTimer = () => {
                 />{" "}
                 Dark Mode
               </label>
-            </div>
+            </div> */}
           </section>
 
         {/* Popup animation */}
@@ -323,134 +349,125 @@ const TaskTimer = () => {
   );
 };
 
-const popupStyles = {
-  container: {
-    position: "fixed",
-    top: "40%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    backgroundColor: "rgba(255, 255, 255, 0.98)",
-    borderRadius: "12px",
-    padding: "25px 35px",
-    boxShadow: "0 0 20px rgba(0, 0, 0, 0.25)",
-    zIndex: 9999,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    animation: "fadeInOut 3s forwards",
-  },
-  image: {
-    width: "140px",
-    height: "140px",
-    borderRadius: "50%",
-    marginBottom: "12px",
-    animation: "popScale 0.7s ease-in-out",
-    boxShadow: "0 0 12px #4caf50",
-    objectFit: "cover",
-  },
-  text: {
-    fontSize: "1.3rem",
-    fontWeight: "700",
-    color: "#4caf50",
-    userSelect: "none",
-  },
-};
-
 const styles = {
   pageContainer: {
     minHeight: "100vh",
+    padding: "40px 20px",
     display: "flex",
     flexDirection: "column",
-    padding: "10px",
+    alignItems: "center",
+    backgroundColor: "#f9f9f9",
   },
   header: {
-    marginBottom: "20px",
     textAlign: "center",
+    marginBottom: "2rem",
   },
   mainContent: {
     display: "flex",
-    flexWrap: "wrap",
-    gap: "20px",
+    flexDirection: "row",
+    gap: "2rem",
+    maxWidth: "1200px",
+    width: "100%",
     justifyContent: "center",
-    flexGrow: 1,
+    alignItems: "flex-start",
+    flexWrap: "wrap",
   },
   leftPanel: {
-    flex: "1 1 320px",
-    padding: "20px",
+    flex: "1 1 350px",
+    padding: "24px",
+    backgroundColor: "#fff",
     borderRadius: "12px",
-    boxShadow: "0 0 15px rgba(0,0,0,0.1)",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
   },
   rightPanel: {
-    flex: "1 1 320px",
-    padding: "20px",
+    flex: "1 1 300px",
+    padding: "24px",
+    backgroundColor: "#fff",
     borderRadius: "12px",
-    boxShadow: "0 0 15px rgba(0,0,0,0.1)",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
   },
   label: {
     display: "block",
-    marginBottom: "12px",
     fontWeight: "600",
+    margin: "12px 0 6px",
   },
   input: {
     width: "100%",
-    padding: "8px",
-    fontSize: "1rem",
-    borderRadius: "6px",
+    padding: "10px 14px",
     border: "1px solid #ccc",
+    borderRadius: "8px",
+    fontSize: "16px",
+    marginTop: "4px",
     outline: "none",
   },
   buttonsContainer: {
-    marginTop: "15px",
     display: "flex",
-    gap: "12px",
+    justifyContent: "space-between",
     flexWrap: "wrap",
-    justifyContent: "center",
+    marginTop: "20px",
+    gap: "10px",
   },
   startButton: {
-    backgroundColor: "#4caf50",
-    border: "none",
-    color: "white",
-    padding: "10px 20px",
-    borderRadius: "8px",
-    fontSize: "1.1rem",
-    cursor: "pointer",
+    backgroundColor: "#3a86ff",
+    color: "#fff",
   },
   pauseButton: {
-    backgroundColor: "#fbc02d",
-    border: "none",
-    color: "#333",
-    padding: "10px 20px",
-    borderRadius: "8px",
-    fontSize: "1.1rem",
-    cursor: "pointer",
+    backgroundColor: "#ffc300",
+    color: "#fff",
   },
   stopButton: {
-    backgroundColor: "#e53935",
-    border: "none",
-    color: "white",
-    padding: "10px 20px",
-    borderRadius: "8px",
-    fontSize: "1.1rem",
-    cursor: "pointer",
+    backgroundColor: "#ef233c",
+    color: "#fff",
   },
   submitButton: {
-    backgroundColor: "#3a86ff",
-    border: "none",
-    color: "white",
-    padding: "10px 25px",
-    borderRadius: "8px",
-    fontSize: "1.1rem",
-    cursor: "pointer",
+    backgroundColor: "#06d6a0",
+    color: "#fff",
+    flexGrow: 1,
   },
   animatedButton: {
-    transition: "transform 0.2s ease",
+    padding: "10px 20px",
+    fontSize: "16px",
+    borderRadius: "8px",
+    border: "none",
+    cursor: "pointer",
+    transition: "transform 0.2s ease, box-shadow 0.2s ease",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
   },
   timerWrapper: {
-    userSelect: "none",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
   },
 };
+
+const popupStyles = {
+  container: {
+    position: "fixed",
+    bottom: "40px",
+    right: "40px",
+    backgroundColor: "#ffffffee",
+    padding: "16px 24px",
+    borderRadius: "12px",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    animation: "fadeInOut 3s ease-in-out",
+    zIndex: 9999,
+  },
+  image: {
+    width: "40px",
+    height: "40px",
+  },
+  text: {
+    fontWeight: "600",
+    fontSize: "16px",
+    color: "#333",
+  },
+};
+
 
 export default TaskTimer;
