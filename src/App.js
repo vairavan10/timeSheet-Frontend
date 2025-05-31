@@ -25,6 +25,7 @@ import ViewReportPage from './components/viewReportPage';
 import ExtraActivityPage from './components/extraActivity';
 import EmployeeSummaryPage from './components/employeeWork'
 import TaskTimer from './components/taskTImer';
+import TimesheetFileUpload from './components/fileupload';
 
 function App() {
   const { darkMode, setDarkMode } = useContext(ThemeContext);
@@ -53,6 +54,7 @@ function App() {
         <Route path="/extraActivity" element={<ExtraActivityPage />} />
         <Route path="/employeeSumarry" element={<EmployeeSummaryPage />} />
         <Route path="/tasktimer" element={<TaskTimer/>}/>
+        <Route path="/fileUpload" element={<TimesheetFileUpload/>}/>
 
 
   

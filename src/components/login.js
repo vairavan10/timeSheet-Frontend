@@ -5,6 +5,8 @@ import kologos from '../asset/kologos.png';
 import axios from '../axios';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -17,7 +19,7 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // 'success' | 'error'
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success'); 
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -29,12 +31,11 @@ const LoginPage = () => {
       localStorage.setItem('user', JSON.stringify(data.user));
 
 
-      // Show success Snackbar
       setSnackbarMessage('Login successful!');
       setSnackbarSeverity('success');
       setSnackbarOpen(true);
 
-      // Navigate after a short delay
+
       setTimeout(() => {
         if (data.user.role === 'admin') {
           navigate('/admindashboard');
@@ -52,7 +53,7 @@ const LoginPage = () => {
   return (
     <div className="login-container">
       <div className="login-wrapper">
-        {/* Left Section */}
+
         <div className="login-left">
           <div className="login-quote">
             <img src={kologos} alt="Logo" style={{ width: '250px' }} />
@@ -61,7 +62,6 @@ const LoginPage = () => {
           </div>
         </div>
 
-        {/* Right Section */}
         <div className="login-box">
           <h2>Welcome!!</h2>
           <p>Please login to continue</p>
@@ -76,33 +76,30 @@ const LoginPage = () => {
               onChange={(e) => setEmail(e.target.value)}
             />
             <div className="password-wrapper">
-  <input
-    type={showPassword ? 'text' : 'password'}
-    className="login-input"
-    placeholder="Password"
-    required
-    value={password}
-    onChange={(e) => setPassword(e.target.value)}
-  />
-  <span
-    className="toggle-password"
-    onClick={() => setShowPassword((prev) => !prev)}
-  >
-    {showPassword ? '🐒' : '🙈'}
-  </span>
-</div>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                className="login-input"
+                placeholder="Password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <span
+                className="toggle-password"
+                onClick={() => setShowPassword((prev) => !prev)}
+                style={{ cursor: 'pointer' }}
+              >
+                {showPassword ? <Visibility /> : <VisibilityOff />}
+              </span>
+            </div>
+
 
             <button type="submit" className="login-button">Login</button>
           </form>
 
-          {/* <p className="create-account">
-            Don’t have an account?{' '}
-            <span onClick={() => navigate('/register')}>Create New User</span>
-          </p> */}
         </div>
       </div>
 
-      {/* ✅ Dynamic Snackbar (Success/Error) */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={3000}

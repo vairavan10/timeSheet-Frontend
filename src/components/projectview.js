@@ -10,6 +10,8 @@ import { Link } from 'react-router-dom';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import Layout from './layout';
+import { generateProjectReportPDF } from './generateProjectReportPDF';
+
 
 const ProjectListPage = () => {
   const [projects, setProjects] = useState([]);
@@ -43,7 +45,7 @@ const ProjectListPage = () => {
         setAvailableDates(dateRes.data?.dates ?? []);
         setReports(reportsData);
       } catch {
-        setError('❌ Error fetching data.');
+        setError(' Error fetching data.');
       } finally {
         setLoading(false);
       }
@@ -51,6 +53,13 @@ const ProjectListPage = () => {
 
     fetchProjects();
   }, []);
+
+  const truncateText = (text, wordLimit = 25) => {
+  if (!text) return '';
+  const words = text.split(' ');
+  return words.length > wordLimit ? words.slice(0, wordLimit).join(' ') + '...' : text;
+};
+
 
   const handleDateChange = async (dateRangeString) => {
     setSelectedDate(dateRangeString);
@@ -119,29 +128,62 @@ const ProjectListPage = () => {
 
         <Grid container spacing={2} alignItems="center" sx={{ mb: 4 }}>
           <Grid item xs={12} sm={8}>
-            <FormControl fullWidth>
-              <InputLabel sx={{ fontWeight: 'bold' }}>📅 Filter by Date</InputLabel>
-              <Select
-                value={selectedDate || 'Latest Report'}
-                label="Select Date"
-                onChange={(e) => handleDateChange(e.target.value)}
+            <FormControl fullWidth sx={{ my: 2 }}>
+              <InputLabel
+                id="date-filter-label"
+                sx={{
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
               >
-                <MenuItem value="Latest Report">Latest Report</MenuItem>
+                📅 Filter by Date
+              </InputLabel>
+
+              <Select
+                labelId="date-filter-label"
+                value={selectedDate || 'Latest Report'}
+                onChange={(e) => handleDateChange(e.target.value)}
+                label="📅 Filter by Date"
+                sx={{
+                  fontWeight: 500,
+                  bgcolor: 'white',
+                  borderRadius: 2,
+                  boxShadow: 1,
+                  '& .MuiSelect-select': {
+                    py: 1.5,
+                  },
+                }}
+              >
+                <MenuItem value="Latest Report" sx={{ fontWeight: 500 }}>
+                  📊 Latest Report
+                </MenuItem>
+
                 {availableDates.length > 0 ? (
                   availableDates.map((dateRange, idx) => {
                     const from = new Date(dateRange.fromDate).toLocaleDateString();
                     const to = new Date(dateRange.toDate).toLocaleDateString();
+
                     return (
-                      <MenuItem key={idx} value={`${dateRange.fromDate}|${dateRange.toDate}`}>
-                        {`${from} to ${to}`}
+                      <MenuItem
+                        key={idx}
+                        value={`${dateRange.fromDate}|${dateRange.toDate}`}
+                        sx={{ fontWeight: 500 }}
+                      >
+                        📅 {`${from} to ${to}`}
                       </MenuItem>
                     );
                   })
                 ) : (
-                  <MenuItem disabled>No Dates Available</MenuItem>
+                  <MenuItem disabled sx={{ fontStyle: 'italic', color: 'gray' }}>
+                    🚫 No Dates Available
+                  </MenuItem>
                 )}
               </Select>
             </FormControl>
+
+
           </Grid>
           <Grid item xs={12} sm={4}>
             <Button
@@ -189,10 +231,14 @@ const ProjectListPage = () => {
                     }}
                   >
                     <TableCell>{project.name}</TableCell>
-                    <TableCell>{report?.dependencies ?? '-'}</TableCell>
+                    <TableCell>
+                      {report?.dependencies ? truncateText(report.dependencies) : '-'}
+                    </TableCell>
                     <TableCell>{report?.utilization ? `${report.utilization}%` : '-'}</TableCell>
                     <TableCell>{report?.hoursSpent ?? '-'}</TableCell>
-                    <TableCell>{report?.status ?? '-'}</TableCell>
+                    <TableCell>
+                      {report?.status ? truncateText(report.status) : '-'}
+                    </TableCell>
                     <TableCell align="center">
                       <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                         <Button
@@ -287,6 +333,16 @@ const ProjectListPage = () => {
           </DialogContent>
 
           <DialogActions sx={{ justifyContent: 'center', p: 2 }}>
+
+  <Button
+    onClick={() => generateProjectReportPDF(selectedProject, selectedReport)}
+    color="primary"
+    variant="contained"
+  >
+    📄 Download Report
+  </Button>
+
+
             <Button
               onClick={handleCloseDialog}
               variant="contained"

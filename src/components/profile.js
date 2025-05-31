@@ -23,6 +23,9 @@ import {
   Snackbar,
   Alert,
   Tooltip,
+  Chip,
+  Divider,
+  Stack
 } from "@mui/material";
 
 const iconStyle = { marginRight: 12 };
@@ -34,8 +37,12 @@ const waveAnimation = {
     transition: { duration: 1, repeat: Infinity, repeatDelay: 1 },
   },
 };
+const skillColors = [
+  "#FF8A80", "#EA80FC", "#8C9EFF", "#80D8FF",
+  "#A7FFEB", "#CCFF90", "#FFFF8D", "#FFD180",
+  "#FF9E80"
+];
 
-// ProfileItem component must be defined **before** use inside Profile
 const ProfileItem = ({ icon, label, onCopy, hoverMessage, theme }) => (
   <Tooltip title={hoverMessage} arrow placement="right">
     <motion.div
@@ -52,6 +59,7 @@ const ProfileItem = ({ icon, label, onCopy, hoverMessage, theme }) => (
             ? "0 4px 8px rgba(255,255,255,0.05)"
             : "0 4px 8px rgba(0,0,0,0.05)",
         cursor: "pointer",
+        userSelect: "text",
       }}
     >
       {icon}
@@ -59,7 +67,6 @@ const ProfileItem = ({ icon, label, onCopy, hoverMessage, theme }) => (
         variant="body1"
         sx={{
           flexGrow: 1,
-          userSelect: "text",
           fontWeight: 600,
           color: theme.palette.mode === "dark" ? "#bbdefb" : "#1565c0",
         }}
@@ -103,7 +110,18 @@ const Profile = () => {
 
       try {
         const res = await axios.get(`/api/employees/${userData.id}`);
+        console.log("skillsss",res.data)
         if (res.status === 200) {
+           if (typeof res.data.skills === "string") {
+    try {
+      console.log("res.data.skills",res.data.skills)
+      res.data.skills = JSON.parse(res.data.skills);
+      console.log("res.data.skills",res.data.skills)
+    } catch {
+      res.data.skills = [];
+    }
+  }
+
           setEmployee(res.data);
         } else {
           setError("Employee not found.");
@@ -159,141 +177,239 @@ const Profile = () => {
           p: { xs: 2, md: 4 },
           display: "flex",
           justifyContent: "center",
-          alignItems: "center",
+          alignItems: "flex-start",
+          gap: 6,
+          flexWrap: "wrap",
         }}
       >
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-          <Paper
-            elevation={12}
+        {/* Sidebar with Avatar and Main Info */}
+        <Paper
+          elevation={10}
+          sx={{
+            width: { xs: "100%", md: 320 },
+            p: 4,
+            borderRadius: 4,
+            bgcolor: paperBgColor,
+            textAlign: "center",
+            boxShadow: theme.shadows[8],
+            position: "sticky",
+            top: 20,
+            height: "fit-content",
+          }}
+        >
+          <motion.div
+            initial="initial"
+            whileHover="hover"
+            style={{ display: "inline-block", cursor: "pointer", position: "relative" }}
+          >
+            <motion.div variants={waveAnimation}>
+            <Avatar
+            src={
+              employee.image
+                ? `${axios.defaults.baseURL}${employee.image.replace(/\\/g, '/')}`
+                : `https://ui-avatars.com/api/?name=${encodeURIComponent(employee.name)}&background=random`
+            }
+            alt={employee.name}
             sx={{
-              maxWidth: 900,
-              p: { xs: 3, md: 6 },
+              width: 140,
+              height: 140,
+              mb: 2,
+              boxShadow: '0 8px 20px rgba(0,0,0,0.12)',
+              border: '3px solid #1976d2', // MUI default primary blue hex color
+            }}
+          />
+
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              variants={{
+                hover: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+                initial: { opacity: 0, y: 10 },
+              }}
+              style={{
+                position: "absolute",
+                top: "-45px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                background: iconColor,
+                color: theme.palette.getContrastText(iconColor),
+                padding: "8px 16px",
+                borderRadius: "24px",
+                fontWeight: "bold",
+                fontSize: "1.2rem",
+                boxShadow: "0 6px 10px rgba(0,0,0,0.15)",
+                pointerEvents: "none",
+              }}
+            >
+              Hi! 👋
+            </motion.div>
+          </motion.div>
+
+          <Typography
+            variant="h4"
+            fontWeight={700}
+            color={theme.palette.mode === "dark" ? "#90caf9" : "#1976d2"}
+            mt={3}
+            sx={{ fontFamily: "'Comic Sans MS', cursive, sans-serif" }}
+          >
+            {employee.name}
+          </Typography>
+          <Typography variant="h6" color={textSecondary} sx={{ fontStyle: "italic", fontWeight: 600, mb: 3 }}>
+            {employee.role}
+          </Typography>
+
+          <Divider sx={{ mb: 3 }} />
+
+          {/* Contact Info */}
+          <Box display="flex" flexDirection="column" gap={2}>
+            {[{
+              icon: <FaEnvelope style={{ ...iconStyle, color: iconColor }} />,
+              label: employee.email,
+              hoverMessage: "Send me an email!",
+              copyLabel: "Email",
+            },{
+              icon: <FaPhoneAlt style={{ ...iconStyle, color: iconColor }} />,
+              label: employee.phone,
+              hoverMessage: "Give me a call!",
+              copyLabel: "Phone",
+            },{
+              icon: <FaMapMarkerAlt style={{ ...iconStyle, color: iconColor }} />,
+              label: employee.location,
+              hoverMessage: "Where I am based.",
+              copyLabel: "Location",
+            }].map(({ icon, label, hoverMessage, copyLabel }) => (
+              <ProfileItem
+                key={label}
+                icon={icon}
+                label={label}
+                hoverMessage={hoverMessage}
+                onCopy={() => handleCopy(label, copyLabel)}
+                theme={theme}
+              />
+            ))}
+          </Box>
+        </Paper>
+
+        {/* Main Content: About, Skills, Experience, Projects */}
+        <Box
+          sx={{
+            flex: 1,
+            maxWidth: 700,
+          }}
+        >
+          <Paper
+            elevation={10}
+            sx={{
+              p: 4,
+              mb: 4,
               borderRadius: 4,
               bgcolor: paperBgColor,
-              boxShadow: theme.shadows[12],
+              boxShadow: theme.shadows[8],
             }}
           >
-            <Grid container spacing={5} alignItems="center">
-              {/* Avatar */}
-              <Grid item xs={12} md={4} textAlign="center">
-                <motion.div
-                  initial="initial"
-                  whileHover="hover"
-                  style={{ display: "inline-block", cursor: "pointer", position: "relative" }}
-                >
-                  <motion.div variants={waveAnimation}>
-                    <Avatar
-                      src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-                      sx={{
-                        width: 160,
-                        height: 160,
-                        mx: "auto",
-                        boxShadow: "0 8px 15px rgba(0,0,0,0.2)",
-                        border: `4px solid ${iconColor}`,
-                      }}
-                      alt="Profile"
-                    />
-                  </motion.div>
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    variants={{
-                      hover: { opacity: 1, y: 0, transition: { duration: 0.3 } },
-                      initial: { opacity: 0, y: 10 },
-                    }}
-                    style={{
-                      position: "absolute",
-                      top: "-40px",
-                      left: "50%",
-                      transform: "translateX(-50%)",
-                      background: iconColor,
-                      color: theme.palette.getContrastText(iconColor),
-                      padding: "6px 12px",
-                      borderRadius: "20px",
-                      fontWeight: "bold",
-                      fontSize: "1.1rem",
-                      boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
-                      pointerEvents: "none",
-                    }}
-                  >
-                    Hi! 👋
-                  </motion.div>
-                </motion.div>
-
-                <Typography
-                  variant="h4"
-                  fontWeight={700}
-                  color={theme.palette.mode === "dark" ? "#90caf9" : "#1976d2"}
-                  mt={2}
-                  sx={{ fontFamily: "'Comic Sans MS', cursive, sans-serif" }}
-                >
-                  {employee.name}
-                </Typography>
-                <Typography variant="subtitle1" color={textSecondary} sx={{ fontStyle: "italic", fontWeight: 600 }}>
-                  {employee.role}
-                </Typography>
-              </Grid>
-
-              {/* Profile details */}
-              <Grid item xs={12} md={8}>
-                <Box display="flex" flexDirection="column" gap={3}>
-                  {[
-                    {
-                      icon: <FaEnvelope style={{ ...iconStyle, color: iconColor }} />,
-                      label: employee.email,
-                      hoverMessage: "Send me an email!",
-                      copyLabel: "Email",
-                    },
-                    {
-                      icon: <FaPhoneAlt style={{ ...iconStyle, color: iconColor }} />,
-                      label: employee.phone,
-                      hoverMessage: "Give me a call!",
-                      copyLabel: "Phone",
-                    },
-                    {
-                      icon: <FaBriefcase style={{ ...iconStyle, color: iconColor }} />,
-                      label: `Designation: ${employee.designation}`,
-                      hoverMessage: "My professional title.",
-                      copyLabel: "Designation",
-                    },
-                    {
-                      icon: <FaCalendarAlt style={{ ...iconStyle, color: iconColor }} />,
-                      label: `Joined: ${formattedDate}`,
-                      hoverMessage: "My first day here!",
-                      copyLabel: "Joining Date",
-                    },
-                    {
-                      icon: <FaUsersCog style={{ ...iconStyle, color: iconColor }} />,
-                      label: `Experience: ${employee.experience} years`,
-                      hoverMessage: "Years of expertise.",
-                      copyLabel: "Experience",
-                    },
-                    {
-                      icon: <FaLaptopCode style={{ ...iconStyle, color: iconColor }} />,
-                      label: `Skills: ${employee.skills.join(", ")}`,
-                      hoverMessage: "My tech stack.",
-                      copyLabel: "Skills",
-                    },
-                    {
-                      icon: <FaMapMarkerAlt style={{ ...iconStyle, color: iconColor }} />,
-                      label: `Location: ${employee.location}`,
-                      hoverMessage: "Where I am based.",
-                      copyLabel: "Location",
-                    },
-                  ].map(({ icon, label, hoverMessage, copyLabel }) => (
-                    <ProfileItem
-                      key={label}
-                      icon={icon}
-                      label={label}
-                      hoverMessage={hoverMessage}
-                      onCopy={() => handleCopy(label, copyLabel)}
-                      theme={theme}
-                    />
-                  ))}
-                </Box>
-              </Grid>
-            </Grid>
+            <Typography variant="h5" fontWeight={700} mb={2} color={iconColor}>
+              About Me
+            </Typography>
+            <Typography variant="body1" color={textSecondary} sx={{ whiteSpace: "pre-line" }}>
+              {employee.about || "No about me description available. You can add a summary here to showcase your background, interests, and goals."}
+            </Typography>
           </Paper>
-        </motion.div>
+
+          <Paper
+            elevation={10}
+            sx={{
+              p: 4,
+              mb: 4,
+              borderRadius: 4,
+              bgcolor: paperBgColor,
+              boxShadow: theme.shadows[8],
+            }}
+          >
+            <Typography variant="h5" fontWeight={700} mb={2} color={iconColor}>
+              Skills
+            </Typography>
+<Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+  {Array.isArray(employee.skills) && employee.skills.length > 0 ? (
+    employee.skills.map((skill) => (
+      <Chip
+        key={skill}
+        label={skill}
+        color="primary"
+        variant={theme.palette.mode === "dark" ? "filled" : "outlined"}
+        sx={{ fontWeight: "bold" }}
+      />
+    ))
+  ) : (
+    <Typography color={textSecondary}>No skills listed.</Typography>
+  )}
+</Box>
+
+
+
+
+          </Paper>
+
+          <Paper
+            elevation={10}
+            sx={{
+              p: 4,
+              mb: 4,
+              borderRadius: 4,
+              bgcolor: paperBgColor,
+              boxShadow: theme.shadows[8],
+            }}
+          >
+            <Typography variant="h5" fontWeight={700} mb={3} color={iconColor}>
+              Experience & Details
+            </Typography>
+
+            <Box display="flex" flexDirection="column" gap={3}>
+              {[{
+                icon: <FaBriefcase style={{ ...iconStyle, color: iconColor }} />,
+                label: `Designation: ${employee.designation}`,
+                hoverMessage: "My professional title.",
+                copyLabel: "Designation",
+              },{
+                icon: <FaCalendarAlt style={{ ...iconStyle, color: iconColor }} />,
+                label: `Joined: ${formattedDate}`,
+                hoverMessage: "My first day here!",
+                copyLabel: "Joining Date",
+              },{
+                icon: <FaUsersCog style={{ ...iconStyle, color: iconColor }} />,
+                label: `Experience: ${employee.experience} years`,
+                hoverMessage: "Years of expertise.",
+                copyLabel: "Experience",
+              }].map(({ icon, label, hoverMessage, copyLabel }) => (
+                <ProfileItem
+                  key={label}
+                  icon={icon}
+                  label={label}
+                  hoverMessage={hoverMessage}
+                  onCopy={() => handleCopy(label, copyLabel)}
+                  theme={theme}
+                />
+              ))}
+            </Box>
+          </Paper>
+
+          <Paper
+            elevation={10}
+            sx={{
+              p: 4,
+              borderRadius: 4,
+              bgcolor: paperBgColor,
+              boxShadow: theme.shadows[8],
+            }}
+          >
+            <Typography variant="h5" fontWeight={700} mb={2} color={iconColor}>
+              Projects
+            </Typography>
+            {/* Placeholder for projects - you can fill with real data */}
+            <Typography color={textSecondary} fontStyle="italic">
+              No projects added yet. This is where you can showcase your work, contributions, or portfolio pieces.
+            </Typography>
+          </Paper>
+        </Box>
 
         <Snackbar
           open={snackbar.open}
@@ -301,7 +417,7 @@ const Profile = () => {
           onClose={handleCloseSnackbar}
           anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         >
-          <Alert severity={snackbar.severity} onClose={handleCloseSnackbar} sx={{ width: "100%" }}>
+          <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: "100%" }}>
             {snackbar.message}
           </Alert>
         </Snackbar>

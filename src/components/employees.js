@@ -114,43 +114,65 @@ const Employee = () => {
   const handleBack = () => {
     setActiveStep((prevStep) => prevStep - 1);
   };
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const employeeData = {
-      ...employee,
-      managerId: managerId,
-      certification: undefined,
-    };
+  // Create FormData object
+  const formData = new FormData();
 
-    try {
-      const response = await axios.post("api/employees/addemployee", employeeData, {
-        headers: { "Content-Type": "application/json" },
+  // Append all employee fields to formData
+  formData.append("name", employee.name);
+  formData.append("email", employee.email);
+  formData.append("phone", employee.phone);
+  formData.append("role", employee.role);
+  formData.append("designation", employee.designation);
+  formData.append("joiningDate", employee.joiningDate);  // make sure this is a string or ISO date
+  formData.append("experience", employee.experience);
+  
+  // Append skills array as JSON string
+employee.skills.forEach(skill => formData.append("skills", skill));
+
+  formData.append("managerId", managerId);
+
+  if (employee.certification) {
+    formData.append("certification", employee.certification);
+  }
+
+  // Append image file - assuming you have an image file in employee.image
+  if (employee.image) {
+    formData.append("image", employee.image);
+  }
+
+  try {
+    const response = await axios.post("api/employees/addemployee", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    if (response.status === 201) {
+      showSnackbar("Employee profile created successfully!", "success");
+      setEmployee({
+        name: "",
+        email: "",
+        phone: "",
+        role: "",
+        designation: "",
+        joiningDate: null,
+        experience: "",
+        skills: [],
+        managerId: "",
+        certification: null,
+        image: null, // reset image too
       });
-
-      if (response.status === 201) {
-        showSnackbar("Employee profile created successfully!", "success");
-        setEmployee({
-          name: "",
-          email: "",
-          phone: "",
-          role: "",
-          designation: "",
-          joiningDate: null,
-          experience: "",
-          skills: [],
-          managerId: "",
-          certification: null,
-        });
-        setTimeout(() => navigate("/dashboard"), 1000);
-      } else {
-        showSnackbar("Something went wrong! Please try again.");
-      }
-    } catch (error) {
-      console.error("Error submitting employee profile:", error);
-      showSnackbar("Error submitting employee profile. Please try again later.");
+      setTimeout(() => navigate("/dashboard"), 1000);
+    } else {
+      showSnackbar("Something went wrong! Please try again.");
     }
-  };
+  } catch (error) {
+    console.error("Error submitting employee profile:", error);
+    showSnackbar("Error submitting employee profile. Please try again later.");
+  }
+};
+
 
   useEffect(() => {
     const fetchManagerName = async () => {
@@ -281,6 +303,24 @@ const Employee = () => {
                       <Grid item xs={6}>
                         <TextField fullWidth label="Experience (in years)" name="experience" value={employee.experience} onChange={handleChange} />
                       </Grid>
+                      <Grid item xs={12}>
+                        <Typography variant="subtitle1">Upload Profile Image</Typography>
+                        <Button variant="outlined" component="label">
+                          Upload
+                          <input
+                            type="file"
+                            accept="image/*"
+                            hidden
+                            onChange={(e) => setEmployee({ ...employee, image: e.target.files[0] })}
+                          />
+                        </Button>
+                        {employee.image && (
+                          <Typography variant="body2" color="textSecondary">
+                            Selected: {employee.image.name}
+                          </Typography>
+                        )}
+                      </Grid>
+
                     </>
                   )}
                   {activeStep === 2 && (
